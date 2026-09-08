@@ -32,9 +32,10 @@ These controls have tests for their stated boundaries. They do not constitute a 
 
 ## Memory evaluation
 
-The experiment code compares eight memory configurations on synthetic workloads.
-It records seeds, token budgets, prompts, tools, and replay traces to make comparisons inspectable.
-Statistics include bootstrap intervals and multiple-comparison controls.
+The experiment components define eight memory configurations, synthetic workloads, and fixed budget controls.
+They include replay contracts, bootstrap intervals, and multiple-comparison controls, with focused component tests.
+The end-to-end benchmark runner is incomplete. The source tree contains the tested components and excludes the unused runner draft.
+Its [design record](docs/superpowers/specs/2026-07-24-memory-architecture-experiment.md#limitations) links the draft in Git history.
 
 Typed records carry scope, provenance, sensitivity, confidence, and validity windows.
 An untyped control retains expired and superseded facts so the experiment can measure those retrieval errors.
@@ -59,9 +60,10 @@ The full repository gate includes formatting, linting, types, tests, builds, and
 npm run verify:framework
 ```
 
-The September 8, 2026 documentation audit ran this gate on Windows.
-Formatting, linting, and type checks passed. The test step reported 2,034 passed, 189 failed, and 15 skipped tests, plus one unhandled error.
-Failures included locked SQLite files and platform-dependent path or symlink behavior. The full gate remains unresolved on that environment.
+The September 8, 2026 repository review ran this gate on Windows with Node 25.5.0.
+Formatting, linting, and type checks passed. The test step reported 2,029 passed, 194 failed, and 15 skipped tests, plus two unhandled errors.
+Failures included SQLite file access, platform-dependent paths and symlinks, and missing test prerequisites. The full gate remains unresolved in this environment.
+The application build, TaskMarket build, and memory graph command passed when run separately.
 
 ## Interface
 

@@ -156,9 +156,10 @@ The reducer retains its `try/catch` as an additional check.
 
 ## Limitations
 
-- **The bench runner is unfinished.** `src/memory/experiment/bench-runner.ts` has the
-  per-item replay machinery but no top-level orchestrator, no CLI, and no tests. Its `metrics` field uses `MetricBundle | null` and currently contains `null`.
-  The previous `{} as MetricBundle` cast claimed an uncomputed bundle. No consumer uses this field yet.
+- **The bench runner is unfinished.** The [runner draft](https://github.com/jhunter11/jarvis-control/blob/c4d8cc3542118ede9c8b182649f3c1bb61da190d/src/memory/experiment/bench-runner.ts) remains in Git history.
+  The September 2026 cleanup removed this unused file from build source and removed its special coverage exclusion.
+  The draft has per-item replay machinery but no top-level orchestrator, CLI, or tests. Its `metrics` field contains `null`.
+  The experiment components and their tests remain in the source tree. A complete runner still needs implementation and validation.
 
 - **The bench measures no consolidation cost.** The replay harness runs no
   consolidation pass, so `consolidationProposals` is structurally zero. The harness would understate the maintenance cost of an arm that declares consolidation.
