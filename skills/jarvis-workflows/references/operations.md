@@ -5,10 +5,13 @@ Use this lane for launchd, caffeinate, watchdogs, disk guards, deployment, hosti
 ## Keep the runtime local and recoverable
 
 - Bind Jarvis and its dashboard loopback-only. Reject wildcard and LAN binds before startup.
+
 - Supervise the immutable release through launchd with `caffeinate -s`, `Umask 0077`, bounded logs,
   restart throttling, and restart only after nonzero exits.
-- Separate liveness from readiness. Disk, database, and gateway failures block readiness; optional
+
+- Separate liveness from readiness. Disk, database, and gateway failures block readiness. Optional
   local model or container failures may degrade health without killing the control plane.
+
 - Keep installers dry-run by default and produce exact planned paths and settings before mutation.
 
 ## Treat remote access as a security gate
@@ -18,7 +21,7 @@ guest shares are absent, a dedicated hardwired private peer exists, forwarding i
 and Remote Management are off, and Jarvis still listens only on loopback. A failed audit is a final
 no-go, not permission to weaken a check.
 
-`caffeinate -s` prevents supported system sleep while on AC power; never promise that it overrides
+`caffeinate -s` prevents supported system sleep while on AC power. Never promise that it overrides
 unsupported lid-close behavior. Use launchd for recovery after any real sleep or restart.
 
 ## Verify

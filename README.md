@@ -1,124 +1,92 @@
 # Jarvis Control
 
-A fail-closed control plane for a multi-tenant AI automation agency: a durable priority queue,
-tenant-isolated memory, cost-aware model routing, and a 45-profile agent catalog — with every
-outward-facing action gated behind an explicit, typed authorization record.
+A TypeScript control plane for AI workflows. It combines a durable task queue, scoped memory, model routing, and typed authorization records.
+This repository is a curated public snapshot of a private working project.
 
-**TypeScript · Node 22 · SQLite · 134k lines · 2,238 tests across 209 files, all passing**
+## Start with the source tour
 
 ```bash
 node explore.mjs
 ```
 
-A numbered menu — zero dependencies, works on a bare clone before `npm ci`. It walks
-the five things this system refuses to do and points at the file enforcing each one.
+The menu runs without installed dependencies. It explains the refusal paths and links each one to its source.
 
----
+## What the project implements
 
-## The idea
+Model execution requires a durable operator enablement record. The web server accepts only a loopback bind address.
+The server resolves tenant scope, and memory backends check scope before returning records.
+These controls have tests for their stated boundaries. They do not constitute a security proof or a production audit.
 
-Most agent frameworks are permissive by default: the agent can act, and guardrails are bolted on to
-stop it. This one inverts that. Authority is a **typed record that must exist before an action is
-possible** — not a prompt instruction, and not a policy check the agent can talk its way past.
+| Component                                                           | Implementation                                                   |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [Retrieval](src/knowledge/lexical-retrieval-service.ts)             | SQLite FTS5 and BM25 over scoped Markdown fragments              |
+| [Context compiler](src/knowledge/context-compiler.ts)               | Deduplication, ranking, and token allocation before a model turn |
+| [Context budget](src/economics/context-budget.ts)                   | Reserved capacity for system and safety context                  |
+| [Model router](src/economics/model-router.ts)                       | Model tier selection from task policy and cost                   |
+| [Provider adapters](src/models/)                                    | Shared interfaces for hosted and local model providers           |
+| [Execution enablement](src/economics/model-execution-enablement.ts) | Durable permission record required before model execution        |
+| [Memory backends](src/memory/system/)                               | Flat, typed, temporal, and ledger representations                |
+| [Memory experiment](src/memory/experiment/)                         | Eight experiment arms with fixed workload and budget controls    |
+| [Agent catalog](src/agents/)                                        | Capability profiles and archetypes                               |
+| [Workflow router](skills/jarvis-workflows/)                         | Task-specific reference loading                                  |
 
-Concretely: model execution is off until an operator writes a durable enablement record; the web
-process refuses to bind a non-loopback host; a client agent cannot name another client's scope
-because scope is server-resolved, not agent-supplied; x402 mainnet settlement is structurally
-blocked rather than merely discouraged. When a required fact is missing, the system returns an
-explicit refusal instead of a plausible guess.
+## Memory evaluation
 
-That constraint is what the test suite is mostly about. It is easy to make an agent do things. The
-engineering is in making it provably *not* do things.
+The experiment code compares eight memory configurations on synthetic workloads.
+It records seeds, token budgets, prompts, tools, and replay traces to make comparisons inspectable.
+Statistics include bootstrap intervals and multiple-comparison controls.
 
-## Architecture
+Typed records carry scope, provenance, sensitivity, confidence, and validity windows.
+An untyped control retains expired and superseded facts so the experiment can measure those retrieval errors.
+The experiment code does not establish that one memory architecture wins on real tasks.
 
-| Concern | Implementation | Where |
-| --- | --- | --- |
-| **Retrieval (RAG)** | SQLite FTS5 BM25 over scoped Markdown fragments, versioned as `sqlite_fts5_bm25_v1`, with abstention when nothing clears the bar | [`src/knowledge/lexical-retrieval-service.ts`](src/knowledge/lexical-retrieval-service.ts) |
-| **Context engineering** | Pre-turn compiler: reserves safety capacity, hash-dedupes candidate fragments, ranks by marginal utility-per-token | [`src/knowledge/context-compiler.ts`](src/knowledge/context-compiler.ts) |
-| **Token budgeting** | Allocator with reserved partitions, so safety and system context cannot be crowded out by evidence | [`src/economics/context-budget.ts`](src/economics/context-budget.ts) |
-| **Cost-aware routing** | Selects the cheapest model tier that satisfies the task's declared policy, not the strongest available | [`src/economics/model-router.ts`](src/economics/model-router.ts) |
-| **Multi-provider abstraction** | Claude, Codex/ChatGPT, Gemini, and Ollama behind one interface, plus rate-limit circuit breaking and recovery scheduling | [`src/models/`](src/models/) |
-| **Deny-by-default execution** | Durable operator-owned enablement record; absent or malformed ⇒ no model call | [`src/economics/model-execution-enablement.ts`](src/economics/model-execution-enablement.ts) |
-| **Interchangeable memory** | Five swappable backends (flat, typed hybrid, typed temporal, ledger, untyped control) behind one `MemorySystem` seam | [`src/memory/system/`](src/memory/system/) |
-| **Evaluation harness** | Frozen 8-arm experiment table with a fairness budget that refuses inadmissible comparisons | [`src/memory/experiment/`](src/memory/experiment/) |
-| **Agent catalog** | 45 capability-scoped profiles over 9 archetypes; tree containment grants no tool, memory, tenant, or wallet authority | [`src/agents/`](src/agents/) |
-| **Skill routing** | One always-loaded router dispatching to 7 on-demand lane references — only the matching lane enters the context window | [`skills/jarvis-workflows/`](skills/jarvis-workflows/) |
+## Run locally
 
-### The memory experiment
-
-[`src/memory/experiment/`](src/memory/experiment/) ranks eight memory architectures — `FlatTag`,
-`TypedBasic`, `TypedTemporal`, `Hierarchical`, `GraphAssist`, `EpisodeOnly`, `FactOnly`,
-`HybridLedger` — under enforced-equal token budgets. Exactly one axis varies per arm (storage
-representation, retrieval policy, consolidation policy, scope policy, forgetting policy); weights,
-seeds, prompts, tools, the simulated clock, and replay traces are frozen across all arms, so an
-effect can be attributed to the representation rather than to an opaque bundle.
-
-The harness will **refuse to report a comparison it cannot make fairly**. Seeded PRNG, synthetic
-workload generation, bootstrap confidence intervals, and FDR control live in
-[`statistics.ts`](src/memory/experiment/statistics.ts) and
-[`workload-generator.ts`](src/memory/experiment/workload-generator.ts).
-
-### Typed memory and scope isolation
-
-Memory records carry `scope`, `sensitivity`, provenance, confidence, and validity windows. The typed
-backends use these to suppress superseded and expired facts and to refuse cross-scope reads. The
-`flat_untyped` arm exists **only** as an experiment control — it returns superseded and expired facts
-by design, which is how the leak-rate comparison gets an honest baseline.
-
-## Screenshots
-
-| | |
-| --- | --- |
-| ![Today view](docs/assets/jarvis-today-desktop.png) | ![Agent Workbench](docs/assets/agent-workbench-desktop.png) |
-| ![Memory graph](docs/assets/memory-graph-desktop.png) | ![Mobile](docs/assets/jarvis-redesign-mobile.png) |
-
-## Run it
-
-Requires Node.js 22+ and npm. No API keys needed — model execution is off by default and the
-dashboard runs on deterministic local data.
+Use Node.js 22 or later and npm. Model execution is off by default.
 
 ```bash
-node explore.mjs                                  # the menu; no install needed
-npm ci && npm run build && npm test && npm start  # the real thing
-```
-
-Then open <http://127.0.0.1:3000/dashboard>. `HOST` must remain loopback; the gateway refuses to
-start otherwise.
-
-The suite is the specification — authority boundaries, refusal paths, and tenant isolation are
-covered as behavior, not as documentation:
-
-```bash
+npm ci
+npm run build
 npm test
+npm start
 ```
+
+Open <http://127.0.0.1:3000/dashboard>. Keep `HOST` on a loopback address.
+
+The full repository gate includes formatting, linting, types, tests, builds, and the memory graph check:
+
+```bash
+npm run verify:framework
+```
+
+The September 8, 2026 documentation audit ran this gate on Windows.
+Formatting, linting, and type checks passed. The test step reported 2,034 passed, 189 failed, and 15 skipped tests, plus one unhandled error.
+Failures included locked SQLite files and platform-dependent path or symlink behavior. The full gate remains unresolved on that environment.
+
+## Interface
+
+| Dashboard                                             | Agent workbench                                             |
+| ----------------------------------------------------- | ----------------------------------------------------------- |
+| ![Today view](docs/assets/jarvis-today-desktop.png)   | ![Agent workbench](docs/assets/agent-workbench-desktop.png) |
+| ![Memory graph](docs/assets/memory-graph-desktop.png) | ![Mobile view](docs/assets/jarvis-redesign-mobile.png)      |
+
+## Project status
+
+I used Claude Code and Codex during implementation. The repository exposes the architecture, source, and tests for review.
+It is not a deployed service and has no reported revenue. Model calls require operator enablement; x402 settlement remains a simulation.
+Private runtime configuration, local scripts, and third-party skill bundles are outside this snapshot.
+
+The files under `docs/revenue/` contain hypotheses and draft outreach templates. They do not document customers or approved outreach.
+Dated specifications and decision logs preserve earlier design states. Read the source and verification output alongside those records.
 
 ## Documentation
 
-- [`SPEC.md`](SPEC.md) — system specification
-- [`DESIGN.md`](DESIGN.md) — visual and interaction rules
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — subsystem map
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — decision log, including the decisions that were reversed
-- [`docs/VULNERABILITIES.md`](docs/VULNERABILITIES.md) — known weaknesses, kept current
-- [`docs/superpowers/specs/`](docs/superpowers/specs/) — the specs written before each subsystem
-
-## Honest notes
-
-**On how this was built.** Written fast, with heavy use of AI coding tools (Claude Code and Codex) —
-which the commit history makes obvious. The architecture, the authority model, and the decision to
-make refusal a first-class result are mine; the tests are the contract that keeps generated code
-honest. I would rather state that plainly than have a reviewer infer it from the commit graph.
-
-**On what this is.** A curated public snapshot of a private working repository. Operational config,
-machine-local runtime scripts, and vendored third-party skill libraries are not included. Everything
-here builds, typechecks, and passes its full suite as committed.
-
-**On what it isn't.** Not a deployed product, and not revenue-generating. The commercial documents
-under `docs/revenue/` are explicitly labeled as hypotheses with zero buyer interviews behind them,
-and the outreach drafts are bracketed templates behind a mandatory human review gate — no channel is
-approved for use. Model execution requires an operator to turn it on. x402 settlement is
-simulation-only.
+- [System specification](SPEC.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Decision history](docs/DECISIONS.md)
+- [Recorded weaknesses](docs/VULNERABILITIES.md)
+- [Subsystem specifications](docs/superpowers/specs/)
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [LICENSE](LICENSE).

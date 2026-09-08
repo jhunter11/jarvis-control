@@ -1,13 +1,11 @@
 # Content anchors
 
-A task that cites `src/task-market/x402-runtime.ts:503` is wrong the moment anyone inserts a line
-above 503, and it fails silently — the citation still resolves, just to the wrong code. Anchors
-replace line numbers with content-addressed references that drift only when the anchored content
-itself changes, which is exactly when a citing task should be re-verified.
+Line-number references can point to the wrong code after an edit. An anchor names a
+claim and records its content digest. A changed claim then requires another review.
 
 ## Syntax
 
-In Markdown, the marker sits on its own line and the anchored sentence is the next non-empty line:
+In Markdown, put the marker on its own line. The next non-empty line contains the claim:
 
 ```markdown
 <!-- @anchor tm.mcp.batch-surface -->
@@ -15,58 +13,44 @@ In Markdown, the marker sits on its own line and the anchored sentence is the ne
 The MCP endpoint accepts JSON-RPC arrays and dispatches each element independently.
 ```
 
-In source files, the sentence follows a dash separator on the same line:
+In source files, place the claim after a dash separator on the same line:
 
 ```ts
 // @anchor tm.mcp.batch-surface - transport accepts JSON-RPC arrays and fans out per element
 ```
 
-Anchor ids are dotted, lowercase, and namespaced by area: `^[a-z][a-z0-9]*(\.[a-z0-9][a-z0-9-]*)+$`.
-Use the lane prefix the work belongs to (`tm.` for task market, `ag.` for agency).
+Use dotted, lowercase IDs with the area prefix: `tm.` for task market or `ag.` for agency.
+The ID pattern is `^[a-z][a-z0-9]*(\.[a-z0-9][a-z0-9-]*)+$`.
+The scanner skips fenced code, so the examples here do not register anchors.
 
-Fenced code blocks are skipped by the scanner, so documenting the convention — including this file —
-never registers an anchor.
+## Lookup
 
-## The arity rule
-
-A lookup returns a verdict determined entirely by how many times the anchor appears:
-
-| Occurrences | Verdict     | Meaning                                                        |
-| ----------- | ----------- | -------------------------------------------------------------- |
-| exactly 1   | `resolved`  | Evidence found; current line number is derived, never stored.  |
-| 0           | `missing`   | The anchored content was deleted. Hard failure, not a warning. |
-| 2 or more   | `ambiguous` | The convention was violated; the anchor identifies nothing.    |
-
-Uniqueness is the whole mechanism. An anchor that appears twice is worse than no anchor, because it
-looks authoritative while pointing at two different things.
+| Occurrences | Verdict     | Meaning                                          |
+| ----------- | ----------- | ------------------------------------------------ |
+| Exactly 1   | `resolved`  | Found one claim. Derive its current line number. |
+| 0           | `missing`   | No claim found. Verification fails.              |
+| 2 or more   | `ambiguous` | Duplicate ID. Verification fails.                |
 
 ## Digests
 
-Each anchor carries a digest of its sentence, normalized by collapsing whitespace and lowercasing,
-so that reflowing or re-indenting does not read as a meaning change. A task records the digest it
-was verified against, giving three states:
+The digest normalizes the claim by collapsing whitespace and lowercasing text.
+Formatting changes alone therefore do not change it. Each task records the digest
+from its last verification.
 
-- **digest matches** — evidence unchanged, task stays verified at zero token cost;
-- **digest differs** — the sentence was reworded, so the task needs semantic re-verification;
-- **unresolvable** — the anchor is missing or ambiguous, so the task fails verification.
+- **Matching digest:** the recorded claim is unchanged.
 
-This is what makes semantic verification a one-time cost per task rather than a per-run cost.
-Steady-state re-verification is a hash comparison.
+- **Different digest:** review the edited claim and its supporting evidence.
 
-## Placing anchors
+- **Missing or ambiguous anchor:** fail verification.
 
-Anchor the claim, not the implementation. A good anchor marks the sentence a task is _about_ — the
-behaviour, invariant, or defect — so that changing unrelated code nearby does not invalidate it.
+A matching digest checks the text, not the truth of the claim. Changes to supporting
+code or evidence can still require review even when the anchored sentence stays the same.
 
-Do not anchor:
+## Placement and checks
 
-- lines that change for formatting reasons;
-- generated files, fixtures, or vendored code;
-- anything inside a fenced example.
+Anchor the behavior, invariant, or defect that the task cites. Avoid formatting-only
+lines, generated files, fixtures, vendored code, and fenced examples.
 
-## Enforcement
-
-`npm run code:index` reports duplicate ids and malformed anchors, and
-`tests/knowledge/anchors.test.ts` fails the release gate when the repository contains an ambiguous
-or malformed anchor. A convention that is not enforced by CI decays into false confidence within
-weeks, so the test is the convention.
+`npm run code:index` reports duplicate IDs and malformed anchors.
+`tests/knowledge/anchors.test.ts` rejects ambiguous or malformed repository anchors
+as part of the release gate.

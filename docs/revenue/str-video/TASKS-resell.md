@@ -1,8 +1,8 @@
-# Version B — Resell the Workflow (Creator Kit) — Task List
+# Version B: creator kit tasks
 
 > Implements [SPEC-resell.md](./SPEC-resell.md). Compartmentalized, sequenced tasks. **Version B is
-> gated on Version A proof (SPEC-resell §7): tasks B1–B5 build the asset skeleton and may proceed
-> now; tasks B6–B8 (publish, price, market with earnings language) are BLOCKED until A has ≥3 real
+> gated on Version A proof (SPEC-resell §7): tasks B1-B5 build the asset skeleton and may proceed
+> now. Tasks B6-B8 (publish, price, market with earnings language) are BLOCKED until A has ≥3 real
 > documented paid deliveries and a substantiated economics readout.** No earnings claim may appear in
 > any asset before that gate clears.
 
@@ -19,7 +19,7 @@ Produce the module map (source → sample → outreach → close → deliver →
 done" per module, and the compliance frame that governs every asset: no earnings claims, compliant
 outreach only, 18+/guardian rule, honest positioning (marketing content, not Airbnb-conversion).
 
-**Done when:** an outline exists with a compliance checklist that later tasks must pass; the outline
+**Done when:** an outline exists with a compliance checklist that later tasks must pass. The outline
 teaches only the compliant pipeline (no scraping/spam).
 
 ---
@@ -28,11 +28,10 @@ teaches only the compliant pipeline (no scraping/spam).
 
 **Type:** content · **Depends on:** B1 · **Complexity:** complex
 
-Write the full self-serve playbook from Version A's SOP, adapted for a beginner solo creator.
-Checklists, screenshots, and step gates. Explicitly excludes any "$X/month" language.
+Write the self-serve playbook from the Version A SOP for a beginner solo creator.
+Include checklists, screenshots, and step gates. Exclude any "$X/month" language.
 
-**Done when:** every module is drafted, passes the B1 compliance checklist, and a reviewer confirms
-zero earnings claims and zero non-compliant tactics.
+**Done when:** every module passes the B1 compliance checklist. A reviewer must check for earnings claims and prohibited tactics.
 
 ---
 
@@ -40,8 +39,7 @@ zero earnings claims and zero non-compliant tactics.
 
 **Type:** content, code · **Depends on:** B1 · **Complexity:** moderate
 
-Assemble the prompt pack, tool-setup guides (exact tool + settings, versioned/dated), CAN-SPAM-
-compliant outreach templates (fields pre-filled), Stripe + intake templates, QC checklist, and the
+Assemble the prompt pack, tool-setup guides (exact tool + settings, versioned/dated), outreach templates with CAN-SPAM review fields, Stripe + intake templates, QC checklist, and the
 buyer usage guide. All original or properly licensed.
 
 **Done when:** the pack is complete, each template carries its compliance fields, and tool guides are
@@ -57,49 +55,44 @@ Configure the creator-commerce host (Whop/Gumroad/Skool): product tiers, **refun
 conspicuous **income disclaimer**, **18+ checkout gate**, and a **guardian pathway** for under-18s.
 No live pricing/publish yet.
 
-**Done when:** the storefront is built in draft with all policies and the age/guardian gate present;
-publishing remains off.
+**Done when:** the draft storefront contains all policies and the age/guardian gate. Publishing remains off.
 
 ---
 
-### Task B5: Optional sample-generator lead magnet (deferred sub-product)
+### Task B5: Optional sample generator (deferred)
 
 **Type:** code · **Depends on:** Version-A Task A4 (`VideoProvider`), B1 · **Complexity:** complex
 
-Thin hosted wrapper that lets a prospect generate one labeled demo clip from uploaded photos — the
-free lead magnet and retention hook. Reuses A's `VideoProvider`. Rate-limited; disclosure label
-enforced; consent/ownership notice on upload.
+Build a hosted wrapper for one labeled demo clip from uploaded photos. Require documented rights and consent for this use.
+Reuse the Version A `VideoProvider`. Limit requests and apply the disclosure label.
 
-**Done when:** a user can self-serve one labeled sample from their own uploaded photos; abuse limits
-and the ownership/consent notice are enforced. (Deferrable without blocking B6–B8.)
+**Done when:** a user can self-serve one labeled sample from their own uploaded photos. The service enforces abuse limits and requires asset permission. (Deferrable without blocking B6-B8.)
 
 ---
 
-### Task B6: Proof integration — **GATED on Version A**
+### Task B6: Proof integration: **GATED on Version A**
 
 **Type:** content · **Depends on:** B2, B4, and Version-A ≥3 documented paid deliveries + economics readout · **Complexity:** moderate
 
-Insert **real, permissioned** case studies and substantiated, disclaimer-bounded typical-results
-language into the course and storefront. No figure appears without a documented A source.
+Add case studies only with permission and source records. Review typical-results evidence separately.
+Do not treat three deliveries or a disclaimer as proof of typical earnings.
 
-**Done when:** every earnings/results statement traces to a real A record with buyer permission and a
-conspicuous disclaimer; a reviewer signs off on FTC-testimonial compliance.
+**Done when:** each proposed results statement has suitable evidence, required permission, and clear limits.
+A reviewer checks the claim and applicable testimonial requirements before publication.
 
 ---
 
-### Task B7: Go-to-market content — **GATED on B6**
+### Task B7: Go-to-market content: **GATED on B6**
 
 **Type:** content · **Depends on:** B6 · **Complexity:** moderate
 
-Produce top-of-funnel content (TikTok/YouTube/IG) and the lead-magnet funnel, all proof-led and
-disclaimer-bounded. Any outward posting still passes the operator-approval gate.
+Prepare TikTok, YouTube, and Instagram launch copy and sample-generator pages, with evidence for each product or results claim. Any outward posting still passes the operator-approval gate.
 
-**Done when:** launch content is drafted, compliance-reviewed, and staged behind the operator gate;
-no post goes out without human approval.
+**Done when:** a reviewer checks the launch draft against the compliance requirements. Every post still requires human approval.
 
 ---
 
-### Task B8: Launch checklist + go decision — **GATED**
+### Task B8: Launch checklist + go decision: **GATED**
 
 **Type:** ops · **Depends on:** B4, B6, B7 · **Complexity:** simple
 
@@ -107,5 +100,5 @@ Assemble the final launch checklist (policies live, gate active, proof integrate
 present, refund flow tested) and a one-page go-decision for the operator. Flip publishing/pricing
 live only on explicit human approval.
 
-**Done when:** the checklist is green except the human go decision; publishing remains off until the
+**Done when:** the checklist is green except the human go decision. Publishing remains off until the
 operator approves. Product stays `built_unverified` until first real sale.

@@ -1,14 +1,15 @@
 # Governed Self-Editing Workbench Design
 
 **Date:** 2026-07-22
-**Status:** Proposed production design; implementation is not authorized by this document
-**Roadmap relationship:** Defines Tasks 26–32 of
+**Status:** Proposed production design. Implementation is not authorized by this document
+**Roadmap relationship:** Defines Tasks 26-32 of
 `docs/superpowers/plans/2026-07-22-production-reliability-self-management.md` and consumes, but does
 not weaken, `docs/superpowers/specs/2026-07-22-reliability-spine-design.md`
 **Primary surface:** Agent Workbench, human-rooted `agency-developer` workflow
-**Decision:** Jarvis may prepare and evaluate a bounded repository change in an isolated workspace.
-Only the local operator may authorize an exact attempt, an exact host execution, or application of
-an exact frozen candidate to a dedicated local branch. This workflow never approves itself, merges,
+**Decision:** Jarvis may prepare and evaluate a bounded repository change in an isolated workspace. Only the local operator may authorize an exact attempt, an exact host execution, or application of
+an exact frozen candidate to a dedicated local branch.
+
+This workflow never approves itself, merges,
 pushes, opens a pull request, changes a protected branch, signs release authority, installs, rolls
 back production, or activates a release.
 
@@ -36,77 +37,100 @@ operator conversation or persisted ToolSmith proposal
   -> separate human-owned protected review/release workflow
 ```
 
-The production claim is deliberately narrow. “Self-editing” means authoring a candidate under a
-fixed authority ceiling. It does not mean self-authorizing, self-merging, self-releasing, or
-self-repairing production.
+“Self-editing” here means authoring a candidate under a fixed authority ceiling.
+Operator decisions govern the attempt, each host execution, and local branch application.
+The independent reliability release path governs production changes.
 
-## 2. Repository truth this design preserves
+## 2. Repository state at the July 22 design checkpoint
 
-This design starts from current implementation facts rather than aspirational names:
+The following implementation state defines the starting point for this dated proposal:
 
-- Page Studio stores and renders page configuration. Its contracts and page service are data-only;
-  it is not a repository editor or authority surface.
+- Page Studio stores and renders page configuration. Its contracts and page service only handle page data.
+  It cannot edit the repository or authorize actions.
+
 - Agent Workbench already has server-owned exact profile routing, persistent conversations, and
-  compare-and-set conversation updates. It is the correct human-rooted surface.
+  compare-and-set conversation updates. Use it for operator-controlled engineering requests.
+
 - The developer catalog already names Architect, Code Blue, Code Red, and Release Verifier stages,
   but those crew entries are profile-only today. No executable engineering lifecycle is implied.
+
 - ToolSmith analysis is observational. The reliability roadmap makes its proposals durable while
   explicitly denying queue, worker, blueprint, subprocess, filesystem, network, Git, and pull-request
   authority.
+
 - Blueprint definitions have a durable lifecycle and static implementation registry, but runtime
-  execution is explicitly unimplemented and is not composed into the gateway. This workbench does
-  not use a blueprint label to smuggle in execution.
+  execution is explicitly unimplemented and is not composed into the gateway. This workbench must not infer execution authority from a blueprint label.
+
 - The queue contract names `project_task`, while the current automation cycle claims only
   `automation`. The workbench does not enqueue engineering work into that cycle until a dedicated,
   tested engineering lane and lease protocol exist.
+
 - Existing generic action proposals are not an acceptable branch-application contract. In
   particular, dashboard copy that says approval has no runtime effect cannot back an approval path
-  that mutates a branch. The workbench has a dedicated, truthful effect contract.
+  that mutates a branch. The workbench requires a dedicated contract that states the exact approval effect.
+
 - Access authorization is the intersection of all authority layers. A partially bootstrapped
   profile is not execution-ready merely because one blueprint grant exists.
+
 - The shared reliability canonical protocol now lives in `src/reliability/canonical.ts` and
-  `src/reliability/identities.ts`. This design extends that protocol; it does not introduce delimiter
+  `src/reliability/identities.ts`. This design extends that protocol. It does not introduce delimiter
   hashes, permissive JSON, caller-defined identity fields, or a second canonicalizer.
 
 ## 3. Operator intent
 
 The operator wants to:
 
-1. discuss a repository problem with the Developer in an ordinary durable conversation;
-2. deliberately turn one exact message or one persisted ToolSmith proposal into a change request;
+1. discuss a repository problem with the Developer in an ordinary durable conversation.
+
+2. deliberately turn one exact message or one persisted ToolSmith proposal into a change request.
+
 3. know the immutable base revision, path ceiling, tool ceiling, model budget, test plan, and expected
-   host commands before authoring begins;
+   host commands before authoring starts.
+
 4. see test-first evidence, the bounded diff, independent findings, the fixed release-gate result,
-   usage, cost coverage, and any degraded or missing evidence;
-5. approve, reject, cancel, retry, or request revision without giving the model approval authority;
+   usage, cost coverage, and any degraded or missing evidence.
+
+5. approve, reject, cancel, retry, or request revision without giving the model approval authority.
+
 6. apply an approved candidate only to a dedicated local branch without disturbing the operator's
-   current working tree, index, branch, or uncommitted changes;
-7. hand the branch and evidence to the existing protected review/release process; and
+   current working tree, index, branch, or uncommitted changes.
+
+7. hand the branch and evidence to the existing protected review/release process.
+
 8. exactly revert the dedicated branch application when it has not advanced, while retaining all
-   evidence and without pretending that a local revert rolls back a deployed release.
+   evidence and without implying that a local revert changes a deployed release.
 
 ## 4. Non-goals and permanent V1 denials
 
 The workbench does not:
 
-- turn Page Studio into a code editor, prompt-to-app builder, terminal, or approval surface;
+- turn Page Studio into a code editor, prompt-to-app builder, terminal, or approval surface.
+
 - let ToolSmith write code, create a change request automatically, enqueue work, execute tools, or
-  transition a blueprint;
+  transition a blueprint.
+
 - treat chat, Telegram, notification delivery, model output, reviewer verdict, or test output as an
-  approval;
+  approval.
+
 - let an agent, model, reviewer, verifier, workspace process, ToolSmith process, or branch applicator
-  mint an operator decision;
-- edit the live operator worktree, its index, its checked-out ref, or its uncommitted files;
+  mint an operator decision.
+
+- edit the live operator worktree, its index, its checked-out ref, or its uncommitted files.
+
 - run a broad shell, accept command text, install dependencies, fetch from the network, execute Git
-  hooks, use submodules or LFS filters, or inherit the operator's environment;
-- modify the workbench's own authority ceiling, sandbox, approval verifier, branch applicator,
+  hooks, use submodules or LFS filters, or inherit the operator environment.
+
+- modify the workbench authority ceiling, sandbox, approval verifier, branch applicator,
   release grader, trust roots, secret subsystem, runtime installer, protected workflows, or evidence
-  verifier from inside this lane;
+  verifier from inside this lane.
+
 - change package-manager manifests, lockfiles, executable bits, symlinks, Git metadata, generated
   binaries, or migrations in V1 unless a later externally authored policy version adds a separate
-  lane and its own acceptance evidence;
+  lane and its own acceptance evidence.
+
 - merge, rebase, force-update, delete a branch, push, create a pull request, approve CI, sign a
-  release intent, call `launchctl`, install files, activate a schedule, or deploy; or
+  release intent, call `launchctl`, install files, activate a schedule, or deploy.
+
 - claim production rollback. Once a candidate has left this local branch lane, remediation is a new
   governed request plus the independent reliability release/rollback protocol.
 
@@ -119,21 +143,21 @@ have separate principals, receipts, approvals, and policy.
 
 | Principal/process         | May                                                                                                                                                                             | Must not                                                                                                                                         |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Local operator UI         | Create an intake from an authorized source; confirm a preview; approve/reject exact attempt, host-exec, branch-application, and rollback fingerprints; cancel; inspect evidence | Supply repository roots, tenant scopes, arbitrary paths, commands, environment, model IDs, branch names, approval receipts, or release authority |
-| Dashboard gateway         | Authenticate local user presence; derive scope from server registrations; validate strict requests; construct/recompute previews; persist one-use decisions with CAS            | Treat loopback alone, a chat message, or a model result as approval; execute author tools; select a wider scope from request text                |
-| Engineering coordinator   | Advance the request state machine; issue short leases; construct exact plans; dispatch fixed crew stages; freeze evidence                                                       | Approve, mutate protected policy, access secrets, execute a general shell, update Git refs, merge, push, or release                              |
+| Local operator UI         | Create an intake from an authorized source. Confirm a preview. Approve/reject exact attempt, host-exec, branch-application, and rollback fingerprints. Cancel. Inspect evidence | Supply repository roots, tenant scopes, arbitrary paths, commands, environment, model IDs, branch names, approval receipts, or release authority |
+| Dashboard gateway         | Authenticate local user presence. Derive scope from server registrations. Validate strict requests. Construct/recompute previews. Persist one-use decisions with CAS            | Treat loopback alone, a chat message, or a model result as approval. Execute author tools. Select a wider scope from request text                |
+| Engineering coordinator   | Advance the request state machine. Issue short leases. Construct exact plans. Dispatch fixed crew stages. Freeze evidence                                                       | Approve, mutate protected policy, access secrets, execute a general shell, update Git refs, merge, push, or release                              |
 | Architect session         | Produce a bounded plan from registered repository context and operator intent                                                                                                   | Edit files, run host commands, approve, select paths/tools/models outside the server ceiling, or alter the ceiling                               |
-| Code Blue author session  | Read bounded source; use typed search/read/patch tools inside one isolated workspace; request exact host executions                                                             | Access the live worktree, network, secrets, arbitrary filesystem, `.git`, approvals, refs, reviewer session, or release controls                 |
-| Code Red reviewer session | Read immutable base, patch, plan, and evidence; emit bounded findings and a verdict                                                                                             | Write the workspace, share the author's continuation, run arbitrary commands, approve, update evidence, or release                               |
+| Code Blue author session  | Read bounded source. Use typed search/read/patch tools inside one isolated workspace. Request exact host executions                                                             | Access the live worktree, network, secrets, arbitrary filesystem, `.git`, approvals, refs, reviewer session, or release controls                 |
+| Code Red reviewer session | Read immutable base, patch, plan, and evidence. Emit bounded findings and a verdict                                                                                             | Write the workspace, share the author continuation, run arbitrary commands, approve, update evidence, or release                                 |
 | Release Verifier          | Reproduce the fixed registered gate on a clean candidate commit and emit deterministic evidence                                                                                 | Use a model, change the candidate, waive a check, approve, merge, push, install, or release                                                      |
-| Workspace sandbox process | Materialize one registered base and candidate; expose only the sandbox API                                                                                                      | See host home, tenant stores, Keychain, agent DB, control DB, sockets, network, live worktree, or Git refs                                       |
-| Host-exec broker          | Execute one approved, registered executable with exact arguments, cwd, sanitized environment, sandbox, and bounds; emit a receipt                                               | Accept shell text/wildcards, infer an executable, broaden filesystem access, reuse an approval, or update repository refs                        |
-| Branch applicator         | Import one precomputed commit object and CAS-update one derived `refs/heads/codex/ecr-…` ref; emit journal/receipt                                                              | Read model text, edit a worktree, update HEAD/index/protected refs, merge/rebase/push, call hooks, or release                                    |
+| Workspace sandbox process | Materialize one registered base and candidate. Expose only the sandbox API                                                                                                      | See host home, tenant stores, Keychain, agent DB, control DB, sockets, network, live worktree, or Git refs                                       |
+| Host-exec broker          | Execute one approved, registered executable with exact arguments, cwd, sanitized environment, sandbox, and bounds. Emit a receipt                                               | Accept shell text/wildcards, infer an executable, broaden filesystem access, reuse an approval, or update repository refs                        |
+| Branch applicator         | Import one precomputed commit object and CAS-update one derived `refs/heads/codex/ecr-…` ref. Emit journal/receipt                                                              | Read model text, edit a worktree, update HEAD/index/protected refs, merge/rebase/push, call hooks, or release                                    |
 | Reliability release path  | Independently review, attest, install, audit, activate, and roll back under the reliability-spine rules                                                                         | Accept a workbench handoff as release approval or live attestation                                                                               |
 
 The author, reviewer, verifier, approval writer, branch applicator, and release path are different
 capability compositions even if they run under the same local OS account. Import-boundary tests and
-constructor interfaces enforce the separation; a shared account is not described as adversarial OS
+constructor interfaces enforce the separation. A shared account is not described as adversarial OS
 isolation.
 
 ### 5.2 Three independent execution controls
@@ -156,12 +180,16 @@ No layer can turn a denial in another layer into permission:
 
 - Tool denial is not modeled as “filesystem read-only.” A denied network, process, Git, secret, or
   approval capability remains denied even when the sandbox could technically read a related path.
+
 - Filesystem containment does not make an arbitrary executable safe.
+
 - Host-exec approval does not widen sandbox mounts, tool grants, or path ceilings.
+
 - A token such as `shell`, `terminal`, `exec`, `bash`, `sh -c`, `npm exec`, or a caller-supplied
   interpreter is never a shortcut around path containment or executable registration.
+
 - If the sandbox implementation, executable digest, approval UI, posture check, or any required
-  layer is unavailable, the result is `unsupported` or `denied`; there is no unsandboxed fallback.
+  layer is unavailable, the result is `unsupported` or `denied`. There is no unsandboxed fallback.
 
 ### 5.3 Authority ceiling
 
@@ -169,14 +197,22 @@ The server resolves an immutable `EngineeringAuthorityCeilingV1` from a protecte
 registration. Request text may describe an outcome but cannot choose or expand the ceiling. The
 ceiling fixes:
 
-- one repository registration and base-ref policy;
-- one server-owned allowed-path-set revision and digest;
-- immutable-control and secret-path deny sets;
-- allowed file types, modes, counts, byte/line limits, and generated-output directories;
-- typed internal tool IDs and exact executable registrations;
-- model route ceiling and hard usage/cost limits;
-- test and release-gate registrations;
-- branch namespace and protected-ref deny set; and
+- one repository registration and base-ref policy.
+
+- one server-owned allowed-path-set revision and digest.
+
+- immutable-control and secret-path deny sets.
+
+- allowed file types, modes, counts, byte/line limits, and generated-output directories.
+
+- typed internal tool IDs and exact executable registrations.
+
+- model route ceiling and hard usage/cost limits.
+
+- test and release-gate registrations.
+
+- branch namespace and protected-ref deny set.
+
 - sandbox, evidence, approval, retention, and recovery policy versions.
 
 A candidate that edits its own ceiling, a file used to grade it, or any authority-bearing path is
@@ -190,9 +226,12 @@ deterministic rejection.
 All bodies are strict versioned TypeScript DTOs decoded with unknown-field rejection. Canonical
 evidence uses the implemented reliability functions:
 
-- `canonicalizeJson()` for recursively key-sorted UTF-8 JSON with no insignificant whitespace;
-- `assertCanonicalJson()` for duplicate/noncanonical input rejection;
-- `canonicalUtcTimestamp()` for real UTC RFC 3339 instants; and
+- `canonicalizeJson()` for recursively key-sorted UTF-8 JSON with no insignificant whitespace.
+
+- `assertCanonicalJson()` for duplicate/noncanonical input rejection.
+
+- `canonicalUtcTimestamp()` for real UTC RFC 3339 instants.
+
 - `domainSeparatedSha256()` for four-byte, big-endian length-prefixed domain and field hashing.
 
 Canonical body digests use a schema-bound helper that first applies the named strict versioned
@@ -207,7 +246,7 @@ belong in `src/reliability/identities.ts` with golden fixtures.
 
 Every `*BodySha256` is computed from a separately declared strict `*CoreV1` DTO that omits its own
 digest, derived ID/fingerprint, mutable state/version pointers, and any later receipt. The combined
-interfaces below show the stored projection for readability; implementations must not hash them
+interfaces below show the stored projection for readability. Implementations must not hash them
 wholesale. There is no self-referential digest. Timestamps appear in a core only when the instant is
 part of the approved/evidenced fact, not merely database metadata.
 
@@ -429,12 +468,12 @@ engineeringEventId = H(
 ```
 
 All numeric identity fields use the same positive-safe-integer string encoding as existing
-reliability identities. An absent target-ref head is encoded by the factory-owned literal `absent`;
+reliability identities. An absent target-ref head is encoded by the factory-owned literal `absent`.
 request/model text cannot supply that sentinel. An exact replay returns the existing row/receipt only
 when every immutable field and digest matches. The same deterministic ID with different bytes is
 `INTEGRITY_CONFLICT`, never last-write-wins.
 
-The first engineering event uses a factory-owned genesis digest constant; later events must bind the
+The first engineering event uses a factory-owned genesis digest constant. Later events must bind the
 exact prior event digest. Request or model text cannot choose either the genesis sentinel or a prior
 event link.
 
@@ -451,7 +490,7 @@ The following interfaces describe persisted canonical bodies. `Sha256Hex`, `GitO
 unchecked aliases. Every union is exhaustive and every DTO carries `schemaVersion: 1`.
 
 `GitObjectId` is validated against the protected repository registration's exact object format
-(`sha1` or `sha256`); implementations may not assume a 40-character object ID or accept a mixed
+(`sha1` or `sha256`). Implementations may not assume a 40-character object ID or accept a mixed
 format within one request.
 
 ### 7.1 Intent, request, authority, and plan
@@ -684,7 +723,7 @@ interface EngineeringApprovalConsumptionV1 {
 
 `plannedChangedPaths` may narrow the registered set and can be revised only by producing a new plan
 revision and fresh attempt approval. It can never widen beyond the server-owned allowed-path set.
-The operator-visible architecture summary is stored as a bounded escaped artifact; its digest, not
+The operator-visible architecture summary is stored as a bounded escaped artifact. Its digest, not
 unbounded prose, is the canonical plan field.
 
 Host-execution templates are immutable protected registry records that describe the logical test/gate
@@ -696,7 +735,7 @@ one-use host-exec approval.
 `maxCostMicrousd` is chosen from protected server configuration and displayed in the approval. The
 model lane cannot start if the catalog version is unavailable or usage/cost cannot be metered.
 Missing usage is `unknown`, never zero. Tier 3 escalation requires a new plan revision and a separate
-exact operator decision; it is not a router fallback.
+exact operator decision. It is not a router fallback.
 
 ### 7.2 Isolated workspace and attempt
 
@@ -796,7 +835,7 @@ interface EngineeringChangeAttemptV1 {
 ```
 
 The lease token itself is secret capability material and is never persisted in canonical evidence or
-logs; only its hash and version are held by the private lease repository. A checkpoint stores no
+logs. Only its hash and version are held by the private lease repository. A checkpoint stores no
 hidden chain-of-thought, raw model request, raw secret, or arbitrary tool output. It stores bounded
 user-visible artifacts, citations to immutable evidence, explicit next action, and accounting.
 
@@ -879,7 +918,7 @@ The broker uses direct process spawn with `shell: false`. `argv` is an array, no
 The executable path is absolute, realpath-resolved, immutable for the invocation, and byte-matched
 to its protected registry digest immediately before spawn. The canonical cwd must equal the
 workspace root or one exact registered subdirectory after no-follow resolution. The sanitized
-environment is constructed from an allowlist; it is not inherited and then redacted.
+environment is constructed from an allowlist. It is not inherited and then redacted.
 
 Every external process requires a one-use approval. The UI may present a finite batch for
 convenience, but the server creates a distinct approval body and decision for every exact member.
@@ -891,7 +930,7 @@ spawn.
 
 `sanitizedEnvironment` is sorted by unique variable name and contains the complete non-secret value
 used for the process. Its canonical digest must match `sanitizedEnvSha256`, and the approval UI must
-render every entry. A value that cannot safely be disclosed is not admitted to this lane; it cannot
+render every entry. A value that cannot safely be disclosed is not admitted to this lane. It cannot
 be replaced by a redacted placeholder and still be approved.
 
 An external test process may write only registered scratch/output paths. A changed source tree after
@@ -1026,26 +1065,32 @@ interface FrozenEngineeringEvidencePackageV1 {
 }
 ```
 
-V1 candidates contain bounded UTF-8 regular files only, with mode `100644`; binary patches,
+V1 candidates contain bounded UTF-8 regular files only, with mode `100644`. Binary patches,
 symlinks, hard-linked escapes, submodules, special files, mode changes, and case/Unicode-normalization
-collisions are rejected. Patch bytes are a retained raw artifact with their own SHA-256; the
+collisions are rejected. Patch bytes are a retained raw artifact with their own SHA-256. The
 canonical changed-path manifest is separately hashed so diff formatting cannot alter file identity.
 
-For `red_before_implementation`, `candidateBinding.kind` must be `test_first_intermediate`; for
+For `red_before_implementation`, `candidateBinding.kind` must be `test_first_intermediate`. For
 `focused_after_implementation`, it must be `final_candidate`. The final package validator requires
 the same request/attempt/plan, the candidate's exact recorded intermediate tree for red, and its
 exact final tree/patch ID for focused. A blocker or high review finding may be only `open` or
-`fixed`; `accepted_risk` is limited to medium/low and remains conspicuous in the operator approval.
-Only a later operator decision accepts that displayed risk; the reviewer cannot grant authority.
+`fixed`. `accepted_risk` is limited to medium/low and remains conspicuous in the operator approval.
+Only a later operator decision accepts that displayed risk. The reviewer cannot grant authority.
 
 Test-first is an enforceable evidence sequence:
 
 1. Code Blue applies only the new/changed test delta.
+
 2. The exact registered focused test fails on that intermediate tree for the expected assertion.
+
 3. The red evidence is frozen before a non-test source path may change.
+
 4. Code Blue applies implementation edits.
+
 5. The same registered focused test passes on the candidate tree.
+
 6. Code Red reviews the frozen candidate in a separate write-denied session.
+
 7. Release Verifier materializes the precomputed candidate commit in a fresh clean checkout and runs
    the fixed complete release gate.
 
@@ -1135,18 +1180,30 @@ The application approval fingerprint binds the canonical body of every field abo
 focused-test, review, release-gate, host-execution, usage, path-policy, secret-scan, and frozen
 evidence digests. It therefore binds, at minimum:
 
-- canonical repository cwd;
-- exact branch-applicator and Git executable paths and byte digests;
-- every fixed argv vector and their order;
-- sanitized environment digest;
-- repository registration and base revision/tree;
-- source base ref and its expected head;
-- exact target ref and expected prior head;
-- plan fingerprint;
-- patch/candidate/commit/tree fingerprints;
-- model/tool budget and measured-usage evidence;
-- sandbox, path, authority, toolchain, and engineering policy revisions;
-- independent review and clean release-gate evidence; and
+- canonical repository cwd.
+
+- exact branch-applicator and Git executable paths and byte digests.
+
+- every fixed argv vector and their order.
+
+- sanitized environment digest.
+
+- repository registration and base revision/tree.
+
+- source base ref and its expected head.
+
+- exact target ref and expected prior head.
+
+- plan fingerprint.
+
+- patch/candidate/commit/tree fingerprints.
+
+- model/tool budget and measured-usage evidence.
+
+- sandbox, path, authority, toolchain, and engineering policy revisions.
+
+- independent review and clean release-gate evidence.
+
 - expected request version, operator principal, expiry, and user-presence context.
 
 The approval body is rendered first. On submit, the server rereads every referenced row and artifact,
@@ -1157,7 +1214,7 @@ with no ref mutation.
 
 The maximum attempt and application approval lifetime is 15 minutes. The maximum host-exec approval
 lifetime is 5 minutes and it expires immediately on first consumption. Protected configuration may
-make any lifetime shorter, never longer. Rejection and cancellation are durable decisions; approval
+make any lifetime shorter, never longer. Rejection and cancellation are durable decisions. Approval
 buttons do not retry an effect from browser JavaScript.
 
 ### 7.6 Release handoff and branch rollback
@@ -1249,9 +1306,11 @@ activate. The protected release process reruns its own checks and requires the r
 independent intent, approval root, CI attestation, live audit, and activation gates.
 
 Rollback is also exact and dashboard-approved. It creates a precomputed revert commit on the same
-dedicated branch; it never deletes or force-moves the branch and never touches a protected ref. The
+dedicated branch. It never deletes or force-moves the branch and never touches a protected ref. The
 branch head must still equal the applied candidate commit. If it has advanced, the result is
-`ROLLBACK_REF_DIVERGED` and a human must create a new governed change. A successful rollback marks
+`ROLLBACK_REF_DIVERGED` and a human must create a new governed change.
+
+A successful rollback marks
 the handoff revoked while retaining both immutable records. It makes no claim about a candidate that
 was merged or deployed outside the lane.
 
@@ -1260,34 +1319,34 @@ was merged or deployed outside the lane.
 ### 8.1 Request state machine
 
 No durable `draft` is created from keystrokes. Intake first produces a bounded, expiring preview.
-Only the operator's exact preview confirmation creates `EngineeringChangeRequestV1` in
+Only exact operator preview confirmation creates `EngineeringChangeRequestV1` in
 `intake_confirmed`.
 
 | Current state                                                                              | Event and required evidence                                                             | Next state                      | Effect                                                              |
 | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------- |
-| —                                                                                          | Confirm current intake preview; source and preview fingerprint still match              | `intake_confirmed`              | Insert immutable request/event only                                 |
-| `intake_confirmed`                                                                         | Coordinator acquires lease and policy/base still match                                  | `planning`                      | Dispatch read-only Architect                                        |
+| None                                                                                       | Confirm current intake preview. Source and preview fingerprint still match              | `intake_confirmed`              | Insert immutable request/event only                                 |
+| `intake_confirmed`                                                                         | Coordinator takes lease and policy/base still match                                     | `planning`                      | Dispatch read-only Architect                                        |
 | `planning`                                                                                 | Valid plan frozen                                                                       | `awaiting_attempt_approval`     | Render exact budget/path/tool/test plan                             |
-| `awaiting_attempt_approval`                                                                | Operator approves current plan fingerprint with fresh user presence                     | `attempting`                    | Create one attempt; no host command is thereby approved             |
+| `awaiting_attempt_approval`                                                                | Operator approves current plan fingerprint with fresh user presence                     | `attempting`                    | Create one attempt. No host command is thereby approved             |
 | `awaiting_attempt_approval`                                                                | Operator rejects                                                                        | `rejected`                      | Terminal, no workspace execution                                    |
 | `attempting`                                                                               | Candidate, tests, independent review, and release-gate evidence all freeze and validate | `awaiting_application_approval` | Render exact branch mutation                                        |
 | `attempting`                                                                               | Retryable attempt ends within request budget                                            | `awaiting_attempt_approval`     | New plan revision/attempt requires fresh approval                   |
-| `attempting`                                                                               | Attempts exhausted or nonretryable failure                                              | `failed`                        | Terminal; retain/quarantine evidence                                |
+| `attempting`                                                                               | Attempts exhausted or nonretryable failure                                              | `failed`                        | Terminal. Retain/quarantine evidence                                |
 | `awaiting_application_approval`                                                            | Operator rejects exact candidate                                                        | `rejected`                      | Terminal, no branch mutation                                        |
 | `awaiting_application_approval`                                                            | Operator approves, server replans/rechecks, and one-use CAS succeeds                    | `branch_applying`               | Consume decision and create prepared application journal atomically |
 | `branch_applying`                                                                          | Exact ref CAS and receipt commit succeed or recover idempotently                        | `release_handoff_ready`         | Insert receipt and inert handoff                                    |
 | `release_handoff_ready`                                                                    | Operator requests rollback preview                                                      | `awaiting_rollback_approval`    | No branch effect                                                    |
-| `awaiting_rollback_approval`                                                               | Operator rejects/cancels rollback                                                       | `release_handoff_ready`         | Retain decision; branch unchanged                                   |
+| `awaiting_rollback_approval`                                                               | Operator rejects/cancels rollback                                                       | `release_handoff_ready`         | Retain decision. Branch unchanged                                   |
 | `awaiting_rollback_approval`                                                               | Operator approves exact rollback and ref still matches                                  | `rollback_applying`             | Consume decision and prepare rollback journal                       |
-| `rollback_applying`                                                                        | Exact revert ref CAS and receipt succeed or recover                                     | `rolled_back`                   | Revert commit retained; handoff marked revoked                      |
-| `release_handoff_ready` or `rolled_back`                                                   | Operator archives                                                                       | `archived`                      | Read model hidden by default; evidence retained                     |
-| Any state through `awaiting_application_approval`, before application-decision consumption | Operator cancels current version                                                        | `cancelled`                     | Stop/kill bounded work; never infer rollback                        |
+| `rollback_applying`                                                                        | Exact revert ref CAS and receipt succeed or recover                                     | `rolled_back`                   | Revert commit retained. Handoff marked revoked                      |
+| `release_handoff_ready` or `rolled_back`                                                   | Operator archives                                                                       | `archived`                      | Read model hidden by default. Evidence retained                     |
+| Any state through `awaiting_application_approval`, before application-decision consumption | Operator cancels current version                                                        | `cancelled`                     | Stop/kill bounded work. Never infer rollback                        |
 | Any pre-application state                                                                  | Base, policy, authority, executable, toolchain, or source revision drifts               | `superseded`                    | Fresh intake required                                               |
 
 `rejected`, `cancelled`, `failed`, `superseded`, and `archived` are terminal. `rolled_back` is an
 effect-complete steady state whose only permitted transition is operator archival. The only
 post-application effect transition is the exact rollback path shown above. Cancellation arriving
-after an application decision was consumed cannot reverse a ref update; the journal
+after an application decision was consumed cannot reverse a ref update. The journal
 finishes/reconciles and the UI offers rollback.
 
 Every transition is a transaction over `(requestId, expectedRequestVersion, expectedState)`. Invalid
@@ -1321,17 +1380,17 @@ A private engineering repository writer owns these tables:
 
 | Table                                                                       | Mutation rule                                                                                     |
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `engineering_change_requests`                                               | Immutable identity/scope/base columns; state/version updated only by checked transition procedure |
+| `engineering_change_requests`                                               | Immutable identity/scope/base columns. State/version updated only by checked transition procedure |
 | `engineering_change_events`                                                 | Append-only ordinal and prior-event hash chain                                                    |
-| `engineering_change_plans`                                                  | Insert-only plan revisions; body digest unique per request/revision                               |
-| `engineering_attempt_approvals`                                             | Insert-only decisions; one current plan/version/principal                                         |
-| `engineering_approval_consumptions`                                         | Insert-only, unique decision ID; atomic with the authorized effect's first journal row            |
+| `engineering_change_plans`                                                  | Insert-only plan revisions. Body digest unique per request/revision                               |
+| `engineering_attempt_approvals`                                             | Insert-only decisions. One current plan/version/principal                                         |
+| `engineering_approval_consumptions`                                         | Insert-only, unique decision ID. Atomic with the authorized effect's first journal row            |
 | `engineering_change_attempts`                                               | Checked state/version and bounded accounting updates                                              |
-| `engineering_workspaces`                                                    | Checked lease/state/version; host path encrypted or private and never sent to model/UI            |
-| `engineering_continuation_checkpoints`                                      | Insert-only ordinals; one current pointer updated by CAS                                          |
+| `engineering_workspaces`                                                    | Checked lease/state/version. Host path encrypted or private and never sent to model/UI            |
+| `engineering_continuation_checkpoints`                                      | Insert-only ordinals. One current pointer updated by CAS                                          |
 | `engineering_host_exec_plans`                                               | Insert-only exact bodies                                                                          |
-| `engineering_host_exec_decisions`                                           | Insert-only decisions; unique request ID and decision ID                                          |
-| `engineering_host_exec_journals`                                            | Checked `prepared/spawned/observed/receipt_committed` phases; unknown effects retained            |
+| `engineering_host_exec_decisions`                                           | Insert-only decisions. Unique request ID and decision ID                                          |
+| `engineering_host_exec_journals`                                            | Checked `prepared/spawned/observed/receipt_committed` phases. Unknown effects retained            |
 | `engineering_host_exec_receipts`                                            | Insert-only exact execution outcome, including unknown effect                                     |
 | `engineering_patch_candidates`                                              | Insert-only frozen candidate/body/blob references                                                 |
 | `engineering_test_evidence`                                                 | Insert-only red/focused rows                                                                      |
@@ -1340,11 +1399,11 @@ A private engineering repository writer owns these tables:
 | `engineering_evidence_packages`                                             | Insert-only frozen manifest                                                                       |
 | `engineering_branch_application_plans`                                      | Insert-only exact branch mutation previews                                                        |
 | `engineering_branch_application_decisions`                                  | Insert-only exact operator decisions                                                              |
-| `engineering_branch_application_journals`                                   | Checked phase transitions; never silently discarded                                               |
+| `engineering_branch_application_journals`                                   | Checked phase transitions. Never silently discarded                                               |
 | `engineering_branch_application_receipts`                                   | Insert-only final effects                                                                         |
-| `engineering_release_handoffs`                                              | Insert-only body; nullable revocation pointer set only by exact rollback transaction              |
+| `engineering_release_handoffs`                                              | Insert-only body. Nullable revocation pointer set only by exact rollback transaction              |
 | `engineering_branch_rollback_plans` / `decisions` / `journals` / `receipts` | Same exact-state and append-only rules as application                                             |
-| `engineering_integrity_incidents`                                           | Append-only bounded incident state/evidence; no raw secrets or provider bodies                    |
+| `engineering_integrity_incidents`                                           | Append-only bounded incident state/evidence. No raw secrets or provider bodies                    |
 
 There is no generic `updateRequest(patch)` API. Repositories expose named transition methods with
 expected version/state and exact evidence IDs. Database triggers reject evidence updates/deletes,
@@ -1354,7 +1413,7 @@ evidence, and ref receipts without a consumed matching decision/journal.
 Decision rows never change after insert. One-use consumption is an immutable
 `EngineeringApprovalConsumptionV1` row with a unique decision foreign key. Creating that row and the
 attempt, host-exec spawn journal, branch-application `prepared` journal, or rollback `prepared`
-journal is one transaction. Exact replay returns the existing consumption/effect; a conflicting
+journal is one transaction. Exact replay returns the existing consumption/effect. A conflicting
 second effect fails.
 
 The coordinator, author, reviewer, and dashboard receive narrower ports. Only the dashboard decision
@@ -1366,11 +1425,16 @@ and receipts. Neither port is present in an agent/model composition.
 Large patch, log, manifest, and rendered-summary bytes live under an owner-only control root, not in
 the repository workspace. The server derives every path from a digest and artifact kind. Writes use:
 
-1. owner-only directories and `umask 0077`;
-2. exclusive create with no-follow behavior;
-3. bounded write and streaming SHA-256;
-4. file `fsync`, atomic same-filesystem rename, and parent-directory `fsync`;
-5. insert of the canonical SQLite reference only after durable rename; and
+1. owner-only directories and `umask 0077`.
+
+2. exclusive create with no-follow behavior.
+
+3. bounded write and streaming SHA-256.
+
+4. file `fsync`, atomic same-filesystem rename, and parent-directory `fsync`.
+
+5. insert of the canonical SQLite reference only after durable rename.
+
 6. read-time size, type, owner, mode, path, and SHA-256 verification.
 
 Existing same-digest bytes are idempotent only when length/type/content match. Missing, mutated,
@@ -1386,20 +1450,28 @@ result.
 
 ### 10.1 Workspace construction
 
-The workspace executor never receives the operator's current directory as a writable root. A
+The workspace executor never receives the current operator directory as a writable root. A
 protected repository registration resolves the repository object store, exact immutable base commit,
 and a server-created owner-only workspace root. Preparation:
 
-1. verifies the registered repository path, revision, object type, and base tree;
-2. creates a fresh `0700` parent with an exclusive server-derived name;
-3. materializes only registered base-tree regular files, without hooks, filters, submodules, or LFS;
-4. verifies a bounded path/mode/blob manifest against the Git tree;
-5. supplies a private ephemeral home/temp/cache inside the sandbox rather than host `HOME`;
+1. verifies the registered repository path, revision, object type, and base tree.
+
+2. creates a fresh `0700` parent with an exclusive server-derived name.
+
+3. materializes only registered base-tree regular files, without hooks, filters, submodules, or LFS.
+
+4. verifies a bounded path/mode/blob manifest against the Git tree.
+
+5. supplies a private ephemeral home/temp/cache inside the sandbox rather than host `HOME`.
+
 6. mounts or exposes the approved source subset read/write, the registered toolchain read-only, and
-   only named scratch/output directories;
+   only named scratch/output directories.
+
 7. denies host home, repository `.git`, live index/worktree, control databases, tenant stores,
-   memory graph, Keychain, `/tmp` outside the private root, device nodes, Unix sockets, and network;
-8. runs deterministic sandbox self-tests; and
+   memory graph, Keychain, `/tmp` outside the private root, device nodes, Unix sockets, and network.
+
+8. runs deterministic sandbox self-tests.
+
 9. marks the lease ready only after all checks pass.
 
 The production feature stays disabled on a host where these containment properties cannot be
@@ -1410,14 +1482,19 @@ demonstrated. “Best effort” directory discipline is not a sandbox.
 All model-visible paths are normalized relative repository paths. Validators reject:
 
 - absolute paths, empty segments, `.`, `..`, NUL/control characters, backslashes, URI schemes, and
-  platform-specific drive prefixes;
+  platform-specific drive prefixes.
+
 - non-NFC text, case-fold collisions, Unicode confusables rejected by policy, and names that change
-  under normalization;
+  under normalization.
+
 - `.git` at any depth, Git control files, hidden credential/config files, and registered secret or
-  immutable-control paths;
+  immutable-control paths.
+
 - symlink or special-file leaves, symlink ancestors, hard-link counts outside the materialized tree,
-  directory replacement races, and paths whose no-follow canonical parent escapes the workspace;
-- unregistered additions/deletions, file/mode/type changes, and aggregate limits beyond the plan; and
+  directory replacement races, and paths whose no-follow canonical parent escapes the workspace.
+
+- unregistered additions/deletions, file/mode/type changes, and aggregate limits beyond the plan.
+
 - any path selected only because it appeared in operator/model text.
 
 Reads are bounded and revalidate type/containment at open time. New files are exclusive-created under
@@ -1447,7 +1524,7 @@ and outbound/inbound network.
 
 Registered secret-path checks run before every read. Secret-pattern/fingerprint and private-key
 scans run over proposed prompt context, patches, generated artifacts, and retained output. The scan
-records only rule IDs, counts, locations safe to display, and a digest; matched bytes are never
+records only rule IDs, counts, locations safe to display, and a digest. Matched bytes are never
 logged. A suspected secret is a nonretryable `SECRET_EXPOSURE_BLOCKED`, quarantines the workspace,
 and prevents model continuation and approval readiness.
 
@@ -1465,12 +1542,19 @@ authoring, and independent review where judgment is useful.
 The initial V1 author set is narrow and server-issued:
 
 - `repo.list_registered_paths`
+
 - `repo.read_bounded_text`
+
 - `repo.search_bounded_text`
+
 - `workspace.apply_structured_patch`
+
 - `workspace.inspect_diff_summary`
+
 - `evidence.request_registered_test`
+
 - `evidence.cite`
+
 - `attempt.checkpoint`
 
 None accepts an absolute root, tenant, executable, shell string, model, branch, approval, or release
@@ -1482,20 +1566,27 @@ bounded frozen-evidence read/citation tools. Release Verifier gets no model tool
 The fixed V1 token/turn/tool/process/time/size ceilings and the required concrete cost cap in
 `EngineeringExecutionPolicyV1` are enforced independently by the model adapter, tool dispatcher,
 host-exec broker, wall-clock lease, and coordinator. A protected activation configuration sets the
-positive cost cap under its separately reviewed deployment ceiling; the plan freezes that value and
+positive cost cap under its separately reviewed deployment ceiling. The plan freezes that value and
 catalog rather than inventing provider pricing in this design. There is no unlimited or null budget.
 
 - Only one attempt and one host process may be active per request.
+
 - There are at most three separately approved attempts and two revision cycles per attempt.
+
 - The default route is at most Tier 2. Tier 3 requires an exact plan revision, cost disclosure, and
-  separate operator approval; it cannot occur automatically after a weak answer.
+  separate operator approval. It cannot occur automatically after a weak answer.
+
 - Provider retries do not reset token, time, tool, or cost accounting.
+
 - Unknown token usage, missing pricing, partial cost coverage, or a changed pricing catalog halts
   before the next model call. It is displayed as unknown, never charged as zero.
+
 - The model cannot recursively delegate. The one allowed depth represents the separately dispatched
   reviewer stage, with one independent session and no author continuation.
+
 - Context is rebuilt from bounded source/evidence citations and the latest checkpoint. Hidden
   reasoning is neither requested nor persisted.
+
 - Cancellation fences the attempt version, stops new tool calls, requests model cancellation, and
   terminates an active process group after the configured grace period. Evidence remains retained.
 
@@ -1516,7 +1607,7 @@ Recommended endpoints are:
 
 | Method and path                                                                 | Strict request body                                                      | Result                                                            |
 | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `POST /api/v1/dashboard/engineering-change-previews`                            | `{ sourceKind, sourceRecordId, expectedSourceVersion }`                  | Expiring server-owned intake preview; no request/workspace effect |
+| `POST /api/v1/dashboard/engineering-change-previews`                            | `{ sourceKind, sourceRecordId, expectedSourceVersion }`                  | Expiring server-owned intake preview. No request/workspace effect |
 | `POST /api/v1/dashboard/engineering-change-requests`                            | `{ previewId, previewFingerprint, expectedSourceVersion }`               | Idempotent confirmed request                                      |
 | `GET /api/v1/dashboard/engineering-change-requests`                             | Bounded query params: cursor, state, limit                               | Authorized summaries, max server limit                            |
 | `GET /api/v1/dashboard/engineering-change-requests/:requestId`                  | None                                                                     | Detail read model and current exact version                       |
@@ -1536,13 +1627,13 @@ Recommended endpoints are:
 | `POST .../:requestId/archive`                                                   | `{ expectedRequestVersion }`                                             | Terminal read-model archival only                                 |
 
 Source IDs refer to records the authenticated server scope can already read. ToolSmith handoff passes
-only a stable proposal ID/version; the server looks it up and derives its sealed scope. A
-conversation handoff passes only a message ID/sequence; intent text is reread from the durable
+only a stable proposal ID/version. The server looks it up and derives its sealed scope. A
+conversation handoff passes only a message ID/sequence. Intent text is reread from the durable
 conversation. There is no free-form “execute this” body outside the conversation itself.
 
 A conversation source must resolve to an append-only `operator` / `operator_input` message at the
 exact stored sequence in an `agency-developer` conversation under the agency trust domain. The
-server binds that sequence and message-body digest; an agent response, another profile/domain, or a
+server binds that sequence and message-body digest. An agent response, another profile/domain, or a
 changed conversation checkpoint is not an eligible source.
 
 Approval challenges are single-use, short-lived, bound to the current authenticated UI session, and
@@ -1598,18 +1689,27 @@ as work performed on the operator's request, not autonomous agents with independ
 
 The workbench adds:
 
-- an explicit “Start governed change” action on an exact operator message;
-- a read-only ToolSmith-origin card whose action opens Developer with proposal ID/version only;
-- request list and detail views with base, scope, state, stage, attempts, usage, budgets, and failure;
+- an explicit “Start governed change” action on an exact operator message.
+
+- a read-only ToolSmith-origin card whose action opens Developer with proposal ID/version only.
+
+- request list and detail views with base, scope, state, stage, attempts, usage, budgets, and failure.
+
 - an immutable timeline for architecture, Code Blue, Code Red, Release Verifier, decisions,
-  application, handoff, and rollback;
-- a bounded file tree and virtualized escaped diff with old/new blob hashes and truncation markers;
+  application, handoff, and rollback.
+
+- a bounded file tree and virtualized escaped diff with old/new blob hashes and truncation markers.
+
 - separate test-first, focused-test, review-finding, release-gate, toolchain, host-command, usage/cost,
-  secret-scan, and policy panels;
+  secret-scan, and policy panels.
+
 - exact approval sheets that truthfully name the effect: model/tool spend, host process execution,
-  local branch creation/update, or local revert;
-- clear stale/expired/corrupt/unsupported/unknown-cost states with approval disabled;
-- reject, cancel, retry-as-new-plan, and exact rollback controls; and
+  local branch creation/update, or local revert.
+
+- clear stale/expired/corrupt/unsupported/unknown-cost states with approval disabled.
+
+- reject, cancel, retry-as-new-plan, and exact rollback controls.
+
 - a handoff panel that says “not pushed, not merged, not released” and exposes only branch/evidence
   identifiers for the separate process.
 
@@ -1622,10 +1722,10 @@ The page meets keyboard-only navigation, visible focus, screen-reader labels/sta
 reduced-motion, 200% zoom, 390 px mobile, tablet, and desktop requirements. Diff/log content is text,
 never inserted as HTML. Long lines, malicious filenames, ANSI/control sequences, RTL controls, and
 model-supplied Markdown cannot escape the component. Browser navigation and restart preserve the
-server state; they do not duplicate decisions.
+server state. They do not duplicate decisions.
 
 Page Studio remains unchanged and data-only. It gets no change-request widget, tool picker, terminal,
-repository path, diff, or approval action. ToolSmith remains proposal-only/non-executing; its
+repository path, diff, or approval action. ToolSmith remains proposal-only/non-executing. Its
 dashboard no longer recomputes on read once the reliability roadmap persistence task lands, and the
 handoff action cannot create work without an additional exact operator confirmation in Developer.
 
@@ -1642,27 +1742,36 @@ does not import objects into or otherwise mutate that repository.
 
 The branch applicator is not the author host-exec broker. It has a narrower registration that can:
 
-1. verify the registered repository object store without changing HEAD/index/worktree;
-2. verify the exact Git executable/toolchain bytes and sanitized environment;
-3. verify or import only the approved base/tree/commit objects;
-4. assert the target is exactly `refs/heads/codex/ecr-<full requestId>`;
-5. assert the protected source base ref still equals `expectedSourceBaseRefHead`;
-6. deny every protected target and symbolic ref;
-7. compare the current target value to `expectedPriorHead`;
-8. update the one target ref with an atomic compare-and-set and a fixed reflog message; and
+1. verify the registered repository object store without changing HEAD/index/worktree.
+
+2. verify the exact Git executable/toolchain bytes and sanitized environment.
+
+3. verify or import only the approved base/tree/commit objects.
+
+4. assert the target is exactly `refs/heads/codex/ecr-<full requestId>`.
+
+5. assert the protected source base ref still equals `expectedSourceBaseRefHead`.
+
+6. deny every protected target and symbolic ref.
+
+7. compare the current target value to `expectedPriorHead`.
+
+8. update the one target ref with an atomic compare-and-set and a fixed reflog message.
+
 9. reread the ref/object/tree and commit the receipt.
 
 It never checks out the target or uses the operator index. Before preparing the journal, a read-only
 snapshot records the operator worktree's current HEAD, branch, index digest, tracked-diff digest,
-untracked path/type/size/content-digest manifest, and status digest without retaining file contents.
-Snapshot hashing is streaming and bounded; if the complete dirty state cannot be proven within the
-protected limits, application is denied before journal preparation. After the ref effect, the same
-snapshot must be byte-equivalent. Any difference is a P0 integrity incident; the UI reports the ref
+untracked path/type/size/content-digest manifest, and status digest without retaining file contents. Snapshot hashing is streaming and bounded. If the complete dirty state cannot be proven within the
+protected limits, application is denied before journal preparation.
+
+After the ref effect, the same
+snapshot must be byte-equivalent. Any difference is a P0 integrity incident. The UI reports the ref
 effect separately as applied or unknown, never as a clean success, and automatic cleanup/rollback is
 forbidden until an operator investigates.
 
 An existing exact target ref at the exact approved commit plus the matching completed receipt is an
-idempotent replay. An existing ref at any other value is `BRANCH_REF_CONFLICT`; the applicator does
+idempotent replay. An existing ref at any other value is `BRANCH_REF_CONFLICT`. The applicator does
 not merge, reset, force-update, rename, or select a new branch.
 
 ## 15. Restart, crash recovery, and cleanup
@@ -1671,13 +1780,18 @@ not merge, reset, force-update, rename, or select a new branch.
 
 On startup, the coordinator scans only bounded nonterminal rows and expired leases. For each it:
 
-1. validates schema/version and the event hash chain;
+1. validates schema/version and the event hash chain.
+
 2. resolves the registered workspace path internally and verifies owner, mode, type, no-follow
-   containment, base, manifest, and policy;
-3. fences the old lease and process instance;
+   containment, base, manifest, and policy.
+
+3. fences the old lease and process instance.
+
 4. validates current posture, request/version/state, base/ref, profile/tool/model revisions, evidence
-   digests, and remaining budgets;
-5. resumes only from a complete immutable checkpoint with an explicitly safe next action; and
+   digests, and remaining budgets.
+
+5. resumes only from a complete immutable checkpoint with an explicitly safe next action.
+
 6. otherwise quarantines the workspace and records `RECOVERY_REQUIRES_NEW_ATTEMPT` or an integrity
    incident.
 
@@ -1707,10 +1821,14 @@ applicator/toolchain/environment fingerprints, and operator-worktree-before dige
 are deterministic:
 
 - At `prepared`, if the ref is old and the object is absent, it may safely continue the exact plan.
+
 - At `object_written`, if the object bytes match and the ref is old, it may perform the exact CAS.
+
 - At `ref_updated`, if the ref is new and all objects/worktree snapshots match, it reconstructs the
-  deterministic receipt and commits it; it does not update the ref again.
+  deterministic receipt and commits it. It does not update the ref again.
+
 - If a completed receipt and exact ref exist, replay returns the receipt.
+
 - If the ref is neither old nor new, object bytes differ, the operator worktree changed, the decision
   is missing/conflicting, or evidence cannot be read, recovery stops with an integrity incident.
 
@@ -1723,7 +1841,9 @@ Workspaces are retained while a request is nonterminal, an approval is active, a
 incomplete, or an incident references them. Terminal workspaces become eligible after the protected
 retention interval. Disposal is a separate bounded janitor with a database-issued exact path/manifest
 claim, owner/type/no-follow revalidation, lease/receipt reference checks, and retained disposal
-receipt. Quarantined paths require operator resolution. Evidence packages and application/rollback
+receipt.
+
+Quarantined paths require operator resolution. Evidence packages and application/rollback
 receipts follow the release evidence retention policy and outlive disposable workspaces.
 
 ## 16. Failure and retry semantics
@@ -1733,106 +1853,137 @@ incident severity. Raw provider/OS/model text is not a failure code.
 
 | Failure class/examples                                                 | Automatic behavior                                                               | Operator path                                           |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Strict decode, canonicalization, identity conflict                     | No retry; no partial write; integrity incident on persisted collision            | Correct client/version or investigate corruption        |
-| Source unauthorized/stale, base or policy drift                        | No retry; mark `superseded` before effects                                       | Create fresh preview/request                            |
-| Sandbox unavailable/self-test failure                                  | No unsandboxed fallback; attempt fails or feature `unsupported`                  | Repair host and approve a new attempt                   |
-| Traversal, symlink, special file, protected path, authority broadening | Immediate nonretryable failure; quarantine                                       | External security review/new policy, not model revision |
-| Secret/path/tenant boundary trigger                                    | Immediate nonretryable failure; stop model/process; P0/P1 incident as classified | Investigate without exposing matched bytes              |
+| Strict decode, canonicalization, identity conflict                     | No retry. No partial write. Integrity incident on persisted collision            | Correct client/version or investigate corruption        |
+| Source unauthorized/stale, base or policy drift                        | No retry. Mark `superseded` before effects                                       | Create fresh preview/request                            |
+| Sandbox unavailable/self-test failure                                  | No unsandboxed fallback. Attempt fails or feature `unsupported`                  | Repair host and approve a new attempt                   |
+| Traversal, symlink, special file, protected path, authority broadening | Immediate nonretryable failure. Quarantine                                       | External security review/new policy, not model revision |
+| Secret/path/tenant boundary trigger                                    | Immediate nonretryable failure. Stop model/process. P0/P1 incident as classified | Investigate without exposing matched bytes              |
 | Model provider timeout/429/temporary transport                         | At most two provider retries from same checkpoint within all existing budgets    | New separately approved attempt after exhaustion        |
-| Unknown usage/pricing or budget exhaustion                             | No further model call; no inferred zero                                          | New plan with disclosed budget or supported catalog     |
-| Model/tool invalid request                                             | No automatic retry of same bytes; one bounded correction turn if policy permits  | Revision/new attempt                                    |
-| Expected red test does not fail for expected assertion                 | Evidence invalid; Code Blue may revise test within cycle budget                  | New plan/attempt when cycles exhausted                  |
-| Focused test or review asks revision                                   | Revision cycle, not infrastructure retry; maximum two                            | New separately approved attempt after limit             |
-| Release gate fail/inconclusive                                         | Candidate cannot be approval-ready; no automatic waiver                          | New plan/attempt                                        |
+| Unknown usage/pricing or budget exhaustion                             | No further model call. No inferred zero                                          | New plan with disclosed budget or supported catalog     |
+| Model/tool invalid request                                             | No automatic retry of same bytes. One bounded correction turn if policy permits  | Revision/new attempt                                    |
+| Expected red test does not fail for expected assertion                 | Evidence invalid. Code Blue may revise test within cycle budget                  | New plan/attempt when cycles exhausted                  |
+| Focused test or review asks revision                                   | Revision cycle, not infrastructure retry. Maximum two                            | New separately approved attempt after limit             |
+| Release gate fail/inconclusive                                         | Candidate cannot be approval-ready. No automatic waiver                          | New plan/attempt                                        |
 | SQLite busy/temporary artifact I/O before effect                       | At most two bounded retries with same idempotency identity                       | Failure/incident after exhaustion                       |
-| Host exec timeout/cancel/crash ambiguity                               | Kill/reconcile; record `effect_unknown`; never auto-replay                       | Fresh exact execution approval                          |
-| Approval stale/expired/replayed/wrong principal/UI unavailable         | Deny with zero effect; no decision synthesis                                     | Reload complete review and decide again                 |
+| Host exec timeout/cancel/crash ambiguity                               | Kill/reconcile. Record `effect_unknown`. Never auto-replay                       | Fresh exact execution approval                          |
+| Approval stale/expired/replayed/wrong principal/UI unavailable         | Deny with zero effect. No decision synthesis                                     | Reload complete review and decide again                 |
 | Branch target CAS mismatch or candidate/base/toolchain drift           | No retry, merge, or alternate branch                                             | Fresh candidate/application plan                        |
 | Crash in known journal phase                                           | Deterministic recovery rules only                                                | Incident if state is ambiguous                          |
 | Rollback ref advanced                                                  | No reset/revert/force                                                            | New governed remediation request                        |
 
 Retry counters and wake times are durable. Retries never reset request attempt, model token, tool,
 host-exec, cost, or wall-clock budgets. A retry after policy/profile/toolchain change is a new plan,
-not a continuation. After three request attempts, the request is terminal `failed`; the operator may
+not a continuation. After three request attempts, the request is terminal `failed`. The operator may
 create a new request linked by provenance, not silently raise the limit.
 
 ## 17. TDD-first implementation and verification
 
 Implementation follows failing tests before production code. The first code change for each slice is
-the named negative/contract test; no component is composed into the gateway while its boundary tests
+the named negative/contract test. No component is composed into the gateway while its boundary tests
 are missing.
 
 ### 17.1 Canonical contract and repository tests
 
 - Golden IDs for every formula above across fresh processes and fixed field ordering.
+
 - Duplicate keys, unknown fields, noncanonical JSON, unsafe integers, negative zero, invalid UTC,
   oversized fields, invalid domain tags, normalization collisions, and delimiter ambiguity fail.
-- Exact replay is idempotent; same ID/different immutable body is `INTEGRITY_CONFLICT`.
+
+- Exact replay is idempotent. Same ID/different immutable body is `INTEGRITY_CONFLICT`.
+
 - Every legal state edge passes and every missing/skipped/stale/conflicting edge fails atomically.
+
 - Database trigger tests prove no evidence update/delete, cross-request reference, second decision
   use, unproved candidate approval, or receipt without journal/decision.
+
 - Migration/reopen tests prove state, events, leases, artifacts, approvals, journals, and receipts
   survive restart.
 
 ### 17.2 Workspace and process security tests
 
 - Begin with an intentionally dirty operator worktree and snapshot HEAD, branch, index, tracked diff,
-  untracked paths, file bytes, and status; every success/failure/cancel/crash case leaves it exact.
+  untracked paths, file bytes, and status. Every success/failure/cancel/crash case leaves it exact.
+
 - Traversal, absolute paths, symlink ancestors/leaves, hard-link escape, FIFO/socket/device, Unicode
   and case collisions, race replacement, `.git`, protected paths, and limit exhaustion fail closed.
+
 - Sandbox fixtures cannot read host home, current repository worktree, tenant/memory/control DBs,
   Keychain, SSH agent, sockets, or network and cannot write outside registered paths.
+
 - Architecture tests prove filesystem sandbox, tool allowlist, and host-exec approval are distinct
   ports. Denying a tool cannot be represented as read-only filesystem access.
+
 - `shell`, `terminal`, command strings, wildcards, `sh -c`, `bash -c`, unregistered interpreters,
   package install/fetch, hooks, submodules, and LFS filters are rejected.
+
 - Vary executable path, executable bytes, argv value/order, cwd, environment, base, plan, patch,
-  sandbox, timeout, output set, request version, principal, or expiry one at a time; each invalidates
+  sandbox, timeout, output set, request version, principal, or expiry one at a time. Each invalidates
   host-exec approval.
+
 - Approval UI unavailable, incomplete evidence rendering, stale challenge, CSRF failure, replay, and
   headless/chat/Telegram decisions all deny without spawn/ref effect.
+
 - Command source mutation, output overflow, timeout, cancellation, orphan process, and crash after
   spawn yield bounded evidence and no automatic replay.
+
 - Secret canaries in files, environment, patch, stdout/stderr, model context, and generated artifacts
   never reach retained raw output or another principal.
 
 ### 17.3 Authoring and evidence tests
 
 - A source change before expected red-test evidence is rejected.
+
 - Red evidence must fail on the exact intermediate tree for the registered assertion, then focused
   evidence must pass on the exact candidate tree.
+
 - Documentation-only exemption is issued only by server path registry and still requires review/gate.
+
 - Changed/deleted/grader/authority/dependency/lockfile/mode/binary/symlink files fail deterministic
   candidate validation.
+
 - Code Red has a distinct session/profile revision, receives frozen read-only evidence, and cannot
   write, use author continuation, approve, or release.
+
 - Open blocker/high findings, stale disposition, missing review, or nonacceptable verdict deny
   readiness.
+
 - Release Verifier has no model/author tools, uses a clean exact commit, fixed toolchain/gate, and
   cannot waive or mutate a check.
+
 - Missing, corrupt, cross-candidate, truncated-inconclusive, stale, or digest-mismatched evidence
   disables approval.
-- Budget boundaries are exact; missing usage/pricing is unknown and halts; retries charge the same
-  durable budget; Tier 3 never auto-falls back.
+
+- Budget boundaries are exact. Missing usage/pricing is unknown and halts. Retries charge the same
+  durable budget. Tier 3 never auto-falls back.
 
 ### 17.4 Approval, application, and rollback tests
 
 - Application approval fingerprint has a golden fixture covering every field in Section 7.5.
+
 - Mutation of any bound digest/field between render, submit, decision commit, and branch effect denies
   with no partial ref/application receipt.
+
 - Agent, reviewer, verifier, ToolSmith, blueprint, queue worker, Telegram, and generic action-proposal
   compositions have no decision-writer import/capability.
-- Approval copy truthfully names its effect; no “no runtime effect” component can dispatch the branch
+
+- Approval copy truthfully names its effect. No “no runtime effect” component can dispatch the branch
   applicator.
-- Target ref derivation is full-ID deterministic; caller branch/ref fields and protected refs fail.
-- Existing exact ref/receipt replays idempotently; absent, diverged, symbolic, checked-out, or
+
+- Target ref derivation is full-ID deterministic. Caller branch/ref fields and protected refs fail.
+
+- Existing exact ref/receipt replays idempotently. Absent, diverged, symbolic, checked-out, or
   protected refs never cause merge/reset/force/alternate selection.
+
 - Planned commit bytes/tree equal the verified candidate and applied result exactly.
+
 - Crash injection at before/after every journal/database/filesystem/ref boundary follows Section 15,
   including receipt reconstruction after known ref success and stop on ambiguity.
+
 - Application and recovery never change operator HEAD/index/worktree/untracked bytes.
-- Handoff has literal `executionEligibility`, merge/push/release authority `none`; architecture spies
+
+- Handoff has literal `executionEligibility`, merge/push/release authority `none`. Architecture spies
   prove no network/Git-host/release/installer port.
+
 - Rollback requires a fresh exact decision, applies only when head equals candidate, creates the exact
   revert commit, revokes but retains handoff, and never claims deployment rollback.
 
@@ -1840,13 +1991,18 @@ are missing.
 
 - Strict API request tests prove no tenant/repository/path/tool/model/environment/command/branch fields
   are accepted and every source lookup is server-authorized.
+
 - List/detail/diff/evidence pagination and artifact reads are bounded and cross-request access fails.
+
 - Malicious model prose, diff content, filenames, ANSI/control/RTL text, and Markdown render as inert
-  text; content security policy and clean console remain green.
-- Stale websocket/poll/read-model data never enables an action; server-projected actions and fresh
+  text. Content security policy and clean console remain green.
+
+- Stale websocket/poll/read-model data never enables an action. Server-projected actions and fresh
   version are required.
+
 - Keyboard, screen reader, visible focus, reduced motion, 200% zoom, 390 px mobile, tablet, desktop,
   refresh, back/forward, and reconnect flows pass.
+
 - Page Studio has no engineering mutation surface. ToolSmith read does not analyze or execute and its
   button passes only proposal ID/version into a separate confirmed flow.
 
@@ -1856,7 +2012,7 @@ lint, type, format, build, architecture, graph, and diff-integrity thresholds ar
 
 ## 18. Production acceptance
 
-The workbench ships disabled. “Implemented” means code and focused tests exist; “production-ready”
+The workbench ships disabled. “Implemented” means code and focused tests exist. “production-ready”
 requires all evidence below.
 
 ### 18.1 Golden-path retained evidence
@@ -1865,15 +2021,23 @@ From the live dashboard and a registered base revision, while the operator workt
 tracked and untracked dirt:
 
 1. Start from one exact conversation message and separately exercise a ToolSmith-origin preview.
+
 2. Confirm a server-owned request and plan with disclosed scope, commands, model/tool/cost limits.
+
 3. Produce retained expected-red evidence before implementation, passing focused evidence after,
    independent Code Red acceptance, and a passing clean full release gate.
+
 4. Restart gateway/coordinator/browser between every major stage and prove exact continuation.
+
 5. Review every evidence panel and approve one application fingerprint with fresh user presence.
+
 6. Apply the exact precomputed commit to the derived local branch and retain journal/receipt.
-7. Prove the operator's dirty worktree/index/branch and all known dirty bytes are unchanged.
+
+7. Prove the dirty operator worktree/index/branch and all known dirty bytes are unchanged.
+
 8. Produce an inert release handoff and prove no push, merge, PR, install, launchd, schedule, or
    release effect occurred.
+
 9. Approve an exact rollback, create the precomputed revert commit, revoke the handoff, and retain all
    prior evidence.
 
@@ -1882,16 +2046,20 @@ and final state remain stable.
 
 ### 18.2 Negative and fault campaign
 
-Run an automated clone for every negative in Sections 17.1–17.5 plus:
+Run an automated clone for every negative in Sections 17.1-17.5 plus:
 
 - cancellation and crash at every state, artifact-write, DB transaction, model checkpoint, process
-  spawn/exit, evidence freeze, approval consumption, object write, ref CAS, and receipt boundary;
+  spawn/exit, evidence freeze, approval consumption, object write, ref CAS, and receipt boundary.
+
 - sandbox absence/escape attempt, network/Keychain/socket access, secret canaries, cross-tenant source,
-  path races, resource exhaustion, stale posture, policy/toolchain/profile/pricing drift;
+  path races, resource exhaustion, stale posture, policy/toolchain/profile/pricing drift.
+
 - wrong base/plan/patch/test/review/gate/usage/cwd/argv/env/executable/ref/principal/user-presence
-  bindings and approval UI outage;
+  bindings and approval UI outage.
+
 - concurrent duplicate submissions, conflicting retries, two coordinators, expired leases, and
-  diverged application/rollback refs; and
+  diverged application/rollback refs.
+
 - gateway/agent/reviewer/ToolSmith/blueprint attempts to import decision, ref, release, installer, or
   arbitrary-process capability.
 
@@ -1903,15 +2071,21 @@ push, or release.
 
 Task 32 remains coupled to the reliability spine:
 
-- the accelerated 14-slot reliability campaign passes with its own golden and fault evidence;
+- the accelerated 14-slot reliability campaign passes with its own golden and fault evidence.
+
 - the real 14-day window has 14/14 verified/finalized/notified jobs, signed start/end attestations,
-  and no unresolved P0/P1, hold, drift, or exhausted notification;
-- live browser security/accessibility checks and an independent code/security review pass;
-- the canonical candidate release gate and hosted protected CI evidence pass;
-- recovery and exact branch rollback drills pass on the production host;
+  and no unresolved P0/P1, hold, drift, or exhausted notification.
+
+- live browser security/accessibility checks and an independent code/security review pass.
+
+- the canonical candidate release gate and hosted protected CI evidence pass.
+
+- recovery and exact branch rollback drills pass on the production host.
+
 - the operator handoff explains source confirmation, every approval effect, stale/unknown states,
   cancellation, evidence export, branch handoff, local rollback limits, and the separate release
-  process; and
+  process.
+
 - the feature is enabled only by a separately reviewed protected configuration revision whose digest
   appears in the acceptance evidence.
 
@@ -1924,21 +2098,32 @@ restarts at a new signed boundary after exact remediation.
 The implementation order preserves dormant safety until the full effect path is testable:
 
 1. Add canonical identity factories/golden tests and strict engineering contracts.
+
 2. Add append-only migrations/repositories, event chain, typed transition procedures, and reopen
    tests with no gateway composition.
+
 3. Add protected repository/path/tool/executable/sandbox policy registrations.
+
 4. Add isolated workspace materialization, typed read/search/patch tools, resource bounds, secret
    scans, and crash-safe retention with adversarial tests.
-5. Add durable attempt coordinator/checkpoints/model accounting; keep model route disabled until
+
+5. Add durable attempt coordinator/checkpoints/model accounting. Keep model route disabled until
    pricing, sandbox, and approval dependencies report ready.
-6. Wire Architect and Code Blue under the exact attempt approval; add per-execution approval broker.
+
+6. Wire Architect and Code Blue under the exact attempt approval. Add per-execution approval broker.
+
 7. Add independent Code Red and deterministic Release Verifier compositions and evidence freeze.
+
 8. Add bounded Agent Workbench read APIs/UI, then exact attempt/host-exec decisions.
+
 9. Add branch-application preview/decision repository while the applicator remains a fake/spy.
-10. Add the narrow journaled branch applicator and rollback behind a disabled feature flag; complete
+
+10. Add the narrow journaled branch applicator and rollback behind a disabled feature flag. Complete
     crash/CAS/dirty-tree tests.
+
 11. Add inert release handoff integration with the reliability release inputs, without any release
     effect.
+
 12. Run complete production acceptance and only then enable the protected configuration.
 
 Expected module boundaries are:
@@ -1987,27 +2172,36 @@ writers, secrets, network clients, installer, or release mutation ports.
 
 The implementation is conformant only while all of these remain true:
 
-1. An operator action begins and approves the work; no agent or observational system can do so.
+1. An operator action starts and approves the work. No agent or observational system can do so.
+
 2. Request text can narrow an outcome but cannot choose tenant, repository root, path ceiling, tools,
    executable, environment, model, branch, approval, or release authority.
+
 3. Page Studio is data-only and ToolSmith is proposal-only/non-executing.
+
 4. Sandbox containment, tool authorization, and exact host-exec approval are separate deny-first
-   layers; no broad shell token bypasses them.
-5. The live operator worktree, index, branch, and uncommitted bytes are never edited.
+   layers. No broad shell token bypasses them.
+
+5. This workflow never edits the live operator worktree, index, branch, or uncommitted bytes.
+
 6. Every attempt, workspace, command, patch, test, review, gate, approval, ref effect, handoff, and
    rollback is exact-state, canonically identified, durable, bounded, and replay-safe.
+
 7. Missing, stale, corrupt, unknown, unmetered, or ambiguous evidence denies progress.
+
 8. Test-first authoring, independent read-only review, and the clean fixed release gate all precede
    operator application review.
+
 9. Approval binds the exact cwd, argv, sanitized environment, executable path/digest, base, plan,
    patch, evidence, policy, ref, prior state, principal, expiry, and user presence.
-10. Branch application updates only one derived local `codex/` ref by CAS; it cannot merge, push,
+
+10. Branch application updates only one derived local `codex/` ref by CAS. It cannot merge, push,
     install, activate, or release.
+
 11. Rollback is a new exact operator-approved local revert, not an autonomous recovery decision or a
     production rollback claim.
+
 12. The independent reliability release path remains the only route from reviewed source to attested
     live activation.
 
-This design intentionally stops at a reviewed local branch and inert handoff. That is the boundary
-that lets Jarvis improve its own code without becoming its own approver, grader, deployer, or source
-of production truth.
+Release activation follows the separate reliability contract.

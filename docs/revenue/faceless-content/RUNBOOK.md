@@ -1,41 +1,42 @@
-# Faceless Content — Daily Operator Runbook
+# Faceless Content: Daily Operator Runbook
 
-> **The whole point of this document:** one fixed hour, a printed sheet, and a repeating
-> `sign in → upload → verify → sign out` loop. No decisions get made during the hour. Every decision
-> was already made when the session sheet was generated.
+> Use a fixed hour and the approved session sheet. Repeat `sign in → upload → verify → sign out` for each account.
+> Stop and defer an item if it needs a new approval.
 
 Jarvis never signs in, never holds a platform password, and never uploads in this phase. It produces
-an ordered sheet; you execute it. That boundary is enforced in code
+an ordered sheet. You execute it. That boundary is enforced in code
 ([faceless-content-workflow.ts](../../../src/content/faceless-content-workflow.ts)) and asserted in
 [tests](../../../tests/content/faceless-content-workflow.test.ts).
 
 ## 1. The daily shape
 
-| Block           | Length     | What happens                                                | Who      |
-| --------------- | ---------- | ----------------------------------------------------------- | -------- |
-| Production      | Separate   | Script, render, QC, metadata pack                           | Operator |
-| **Upload hour** | **60 min** | **Sign in, upload, verify, record, sign out — per account** | Operator |
-| Log             | Inside     | Public URLs and posted times recorded before the hour ends  | Operator |
+| Block           | Length     | What happens                                               | Who      |
+| --------------- | ---------- | ---------------------------------------------------------- | -------- |
+| Production      | Separate   | Script, render, QC, metadata pack                          | Operator |
+| **Upload hour** | **60 min** | **Sign in, upload, verify, record, sign out: per account** | Operator |
+| Log             | Inside     | Public URLs and posted times recorded before the hour ends | Operator |
 
-The upload hour is not a production hour. If a render is not finished, it does not enter the queue;
-it is not "finished during" the session. Mixing the two is what turns a 60-minute loop into a
-three-hour evening.
+Finish each render before adding it to the upload queue. Keep production work outside the upload hour.
 
 Default daily volume for the pilot: **4 uploads across 4 accounts, one story core, four variants.**
-At 6 minutes per upload plus 5 minutes of per-account overhead, that is 44 minutes with 16 minutes of
-slack for a challenge screen, a re-upload, or a slow processing bar.
+The estimate allows 6 minutes per upload and 5 minutes of overhead per account.
+That totals 44 minutes, with 16 minutes left for delays. Record actual time in the session log.
 
-## 2. Preconditions — checked before the hour starts
+## 2. Preconditions: checked before the hour starts
 
 An item enters the queue only when all five are true. The planner rejects anything else instead of
 scheduling it, and the rejection reason is recorded.
 
 1. The rendered file exists at a stable path and its `sha256` digest is recorded.
+
 2. The metadata pack exists: platform-native title/caption, description, hashtags, cover-frame
    choice, and pinned comment.
-3. `finalQcApproved: true` — a human watched the whole render, start to finish, with sound.
-4. `rightsCleared: true` — voice license, visual license/provenance, and music rights are all on
+
+3. `finalQcApproved: true` , a human watched the whole render, start to finish, with sound.
+
+4. `rightsCleared: true` , voice license, visual license/provenance, and music rights are all on
    file.
+
 5. The disclosure flags are truthful: `containsGenerativeMedia`, and `realisticSyntheticMedia` only
    when the render could be mistaken for a real event, place, or person.
 
@@ -56,39 +57,44 @@ npm run content:session -- \
 ```
 
 Flags: `--queue` and `--portfolio` (files) and `--start` (ISO datetime) are required. `--out`
-defaults to `<sessionId>.md`; `--session-id` and `--request-id` default from the start date;
+defaults to `<sessionId>.md`. `--session-id` and `--request-id` default from the start date.
 `--policy` defaults to a 60-minute block (`2/6/2/1` sign-in/upload/verify/sign-out, sign-out
-required, 8 accounts, 3 uploads each); `--print` also echoes the sheet to stdout. The worked example
-files above validate as-is — copy them and swap in your real accounts and render digests.
+required, 8 accounts, 3 uploads each). `--print` also echoes the sheet to stdout. The worked example
+files above validate as-is: copy them and swap in your real accounts and render digests.
 
 The queue file is a JSON array (or `{ "queue": [...] }`) with one entry per approved, rendered
 variant: `itemId`, `variantId`, `accountId`, `storyId`, `assetRef`, the `sha256` `assetDigest`, the
 `renderManifestDigest` from `compose_variants`, a `metadataRef`, `finalQcApproved`, `rightsCleared`,
 the disclosure flags, and a `priority`. Invalid input fails closed with a structured error and a
-non-zero exit code; nothing is written.
+non-zero exit code. Nothing is written.
 
 What comes back:
 
-- **`blocks`** — one per account, ordered `primary` accounts first, then `experiment`, then
+- **`blocks`**: one per account, ordered `primary` accounts first, then `experiment`, then
   `archive`, each with an exact start offset and a scheduled clock time.
-- **`steps`** — inside each block: `sign_in`, one `upload` step per item with its own platform
+
+- **`steps`**: inside each block: `sign_in`, one `upload` step per item with its own platform
   checklist, one `verify`, one `sign_out`. Every step carries `jarvisPerforms: false`.
-- **`totals`** — estimated minutes against the budget, plus what remains.
-- **`deferred`** — items that did not fit, with `session_minutes_exhausted`,
+
+- **`totals`**: estimated minutes against the budget, plus what remains.
+
+- **`deferred`**: items that did not fit, with `session_minutes_exhausted`,
   `account_upload_cap_reached`, or `session_account_cap_reached`.
-- **`rejected`** — items that failed a precondition, with the exact reason.
-- **`completionLog`** — the fields you must record before the hour ends.
+
+- **`rejected`**: items that failed a precondition, with the exact reason.
+
+- **`completionLog`**: the fields you must record before the hour ends.
 
 The sheet never contains a password, a token, or a `secretref:`. It names the account and tells you
 to sign in from your own password manager.
 
-### 3.1 What the sheet actually looks like
+### 3.1 Example session sheet
 
 Generated by the planner from four approved variants, a 09:00 start, and the policy above. Blocks are
 ordered `primary` first, then `experiment`, and within a role by account ID.
 
 ```text
-Block 1 — tiktok @midnightmemos (primary) — 11 min
+Block 1 - tiktok @midnightmemos (primary) - 11 min
   09:00  sign_in   Sign in to tiktok as @midnightmemos using the operator password manager.
   09:02  upload    item-2-account-tiktok-main
                    open_the_composer_from_the_signed_in_profile
@@ -103,7 +109,7 @@ Block 1 — tiktok @midnightmemos (primary) — 11 min
   09:08  verify    Confirm every post is live, then record the public URL and posted time.
   09:10  sign_out  Sign out completely before opening the next account.
 
-Block 2 — youtube @midnightmemos (primary) — 11 min
+Block 2 - youtube @midnightmemos (primary) - 11 min
   09:11  sign_in   Sign in to youtube as @midnightmemos using the operator password manager.
   09:13  upload    item-1-account-youtube-main
                    open_the_composer_from_the_signed_in_profile
@@ -117,17 +123,17 @@ Block 2 — youtube @midnightmemos (primary) — 11 min
   09:19  verify    Confirm every post is live, then record the public URL and posted time.
   09:21  sign_out  Sign out completely before opening the next account.
 
-Block 3 — facebook Tomorrow Archive (experiment) — 11 min   09:22 → 09:33
-Block 4 — instagram @tomorrowarchive (experiment) — 11 min  09:33 → 09:44
+Block 3 - facebook Tomorrow Archive (experiment) - 11 min   09:22 → 09:33
+Block 4 - instagram @tomorrowarchive (experiment) - 11 min  09:33 → 09:44
 
 Totals: 44 of 60 minutes, 16 remaining, 4 uploads, 0 deferred, 0 rejected.
 ```
 
-Note what the checklists do and do not contain. The TikTok block carries
-`enable_the_ai_generated_content_label` because the variant declares generative media; the YouTube
+The TikTok block carries
+`enable_the_ai_generated_content_label` because the variant declares generative media. The YouTube
 block does not carry `declare_altered_or_synthetic_content_in_the_disclosure_step`, because this
 episode is stylized rather than realistic synthetic media. Disclosure steps appear only when the
-declared flags require them — which is why the flags must be truthful at queue time.
+declared flags require them: which is why the flags must be truthful at queue time.
 
 ## 4. The loop
 
@@ -136,11 +142,11 @@ Repeat per account block, in the order printed. Do not reorder. Do not open two 
 ### 4.1 Sign in (2 min)
 
 - Open the platform in one browser profile.
+
 - Sign in as the account named in the block, using the password manager.
+
 - Confirm the profile/handle on screen matches `publicLabel` in the block **before** touching the
-  upload button. This is the single highest-cost mistake in the whole loop — a variant posted to the
-  wrong account cannot be un-posted, and it breaks the analytics attribution the pilot gate depends
-  on.
+  upload button. A wrong-account post breaks analytics attribution and can require removal.
 
 ### 4.2 Upload (6 min per item)
 
@@ -149,30 +155,46 @@ Work the `checklist` array on the step, top to bottom. It is already platform-sp
 **YouTube**
 
 1. Open the composer from the signed-in profile.
+
 2. Select the exact rendered file named in `assetRef`.
+
 3. Paste the title (≤100 characters) and the description/pinned comment from the metadata pack.
+
 4. Answer the made-for-kids question.
+
 5. Confirm the vertical master and cover frame (Shorts), or set chapters and the mid-roll break
    position (long-form).
+
 6. If `realisticSyntheticMedia` is true, declare altered or synthetic content in the disclosure step.
+
 7. Confirm the visible metadata matches the pack, then publish.
 
 **TikTok**
 
 1. Open the composer from the signed-in profile.
+
 2. Select the exact rendered file.
+
 3. Paste the caption and hashtags.
+
 4. Set the cover frame.
+
 5. Confirm the master runs at least one minute for the Creator Rewards format.
+
 6. If `containsGenerativeMedia` is true, enable the AI-generated content label.
+
 7. Confirm who-can-watch and comment settings, then publish.
 
 **Instagram / Facebook**
 
 1. Open the composer from the signed-in profile.
+
 2. Select the exact rendered file.
+
 3. Paste the caption, set the cover frame, confirm audio rights.
+
 4. If `containsGenerativeMedia` is true, enable the AI or digitally-created label.
+
 5. Confirm the visible metadata matches the pack, then publish.
 
 Never retype a caption from memory. Paste from the metadata pack so the published text matches the
@@ -181,13 +203,15 @@ approved text.
 ### 4.3 Verify (2 min)
 
 - Load the public URL in a logged-out or private window. If it does not resolve, it is not live.
+
 - Confirm the disclosure label actually rendered on the post, not just in the composer.
+
 - Copy the public URL and the posted time into the log.
 
 ### 4.4 Sign out (1 min)
 
-Sign out completely before opening the next account. Not "switch account" — sign out. This is why
-`requireSignOut` is a hard `true` in the policy: a stale session is how the wrong account posts.
+Sign out completely before opening the next account. Account switching alone does not satisfy `requireSignOut: true`.
+This rule reduces the risk of publishing from a stale session.
 
 ## 5. The log
 
@@ -204,7 +228,7 @@ Record per item, inside the hour, in the completion log:
 
 Then set 24h, 7d, and 30d analytics checkpoints. **An unrecorded post counts as incomplete analytics
 coverage at the pilot gate**, which means it cannot contribute to the evidence that unlocks
-ElevenLabs or Higgsfield spend. Recording is not admin overhead; it is the gate's input.
+ElevenLabs or Higgsfield spend. The gate uses the completion log as evidence.
 
 ## 6. When something goes wrong
 
@@ -214,34 +238,34 @@ ElevenLabs or Higgsfield spend. Recording is not admin overhead; it is the gate'
 | 2FA or a security challenge           | Complete it, note the added minutes, drop the last block if the hour is up. |
 | Processing stuck past the step budget | Leave it processing, verify it in tomorrow's session, record it as pending. |
 | Wrong account posted to               | Delete the post, record a `policy_incident`, do not re-post the same day.   |
-| Copyright or music claim              | Record a `rights_incident`. This resets the pilot gate; it is not cosmetic. |
+| Copyright or music claim              | Record a `rights_incident`. This resets the pilot gate.                     |
 | The hour ends with items left         | They are already in `deferred`. Do not run over. Regenerate tomorrow.       |
 
-The hour is a hard boundary. Overrunning it is the failure mode that ends faceless-content routines,
-not any single bad post.
+End the session at the time limit and defer unfinished items.
 
 ## 7. Weekly rhythm
 
 | Day       | Production                     | Upload hour |
 | --------- | ------------------------------ | ----------- |
 | Monday    | Write and render 3 episodes    | Yes         |
-| Tuesday   | —                              | Yes         |
+| Tuesday   | No production block            | Yes         |
 | Wednesday | Write and render 3 episodes    | Yes         |
-| Thursday  | —                              | Yes         |
+| Thursday  | No production block            | Yes         |
 | Friday    | Write, render, review the week | Yes         |
 | Weekend   | Optional buffer / catch-up     | Optional    |
 
-Twelve eligible episodes at this cadence is roughly two and a half weeks — which is exactly the
-pilot-gate sample size in [README.md](./README.md). The manual loop is not a placeholder for
-automation; it is how the evidence gets generated.
+The pilot requires twelve eligible episodes and a full seven-day analytics window for each.
+Allow for that measurement delay when planning the schedule. See [README.md](./README.md).
 
-## 8. What this hour is buying
+## 8. Review the pilot evidence
 
-Three things, in order:
+Before considering automation, review:
 
-1. **Evidence** — twelve episodes with complete seven-day analytics and complete known costs.
-2. **A stable creative voice** — the thing platform monetization review actually checks for.
-3. **A proven, boring, repeatable procedure** — the only kind worth automating.
+1. **Evidence**: twelve episodes with complete seven-day analytics and complete known costs.
+
+2. **Creative consistency**: whether the episodes keep their intended narrator, audience, and style.
+
+3. **Procedure results**: session times, deferred items, and incident records.
 
 Automation of this loop, and paid voice or cinematic generation, come after. The staged path is in
 [ROADMAP.md](./ROADMAP.md).

@@ -128,7 +128,7 @@
             <div class="context-card">
               <span class="context-label">Control mode</span>
               <strong>Guarded autonomy</strong>
-              <span>Only reversible internal work can run; external effects stay gated.</span>
+              <span>Only reversible internal work can run. External effects require approval.</span>
               <span class="context-boundary">Loopback · tenant-safe summaries</span>
               <a class="context-link" href="/dashboard?view=system">Review controls</a>
             </div>
@@ -431,8 +431,8 @@
               <div>
                 <p class="eyebrow">Personal trust domain</p>
                 <p>
-                  Inspectable memories with provenance and review dates; never available to agency
-                  workers.
+                  Inspect memories with provenance and review dates. These records stay private from
+                  agency workers.
                 </p>
               </div>
               <span class="status-badge neutral">Private · loopback</span>
@@ -447,7 +447,7 @@
               <div>
                 <p class="eyebrow">Agency command center</p>
                 <p>
-                  Internal reversible work may run; external or privileged effects require approval.
+                  Internal reversible work may run. External or privileged effects require approval.
                 </p>
               </div>
               <span class="status-badge neutral" id="agency-posture">Loading posture</span>
@@ -482,7 +482,7 @@
                 </div>
                 <div class="agent-sort-state">
                   <strong>Grouped by purpose</strong>
-                  <span>Runtime and cost sorting unlock when observed telemetry exists.</span>
+                  <span>Runtime and cost sorting need observed telemetry.</span>
                 </div>
               </div>
               <details class="agent-registry-details" id="agent-registry-details">
@@ -533,7 +533,7 @@
             <div class="view-intro">
               <div>
                 <p class="eyebrow">Operator focus</p>
-                <p>One ordered place to decide what Jarvis should do next—and why.</p>
+                <p>Review the next work item and its priority.</p>
               </div>
               <span class="status-badge" id="health-badge">Loading health</span>
             </div>
@@ -564,7 +564,7 @@
                     <p class="eyebrow">Durable order</p>
                     <h2 id="attention-heading">Ordered work</h2>
                   </div>
-                  <span id="attention-count" class="count-pill">—</span>
+                  <span id="attention-count" class="count-pill">Pending</span>
                 </div>
                 <div id="attention-list"><p class="panel-state">Loading attention…</p></div>
               </section>
@@ -611,7 +611,7 @@
                   excluded.
                 </p>
               </div>
-              <span class="count-pill" id="client-total">—</span>
+              <span class="count-pill" id="client-total">Pending</span>
             </div>
             <div class="card-grid" id="clients-list">
               <p class="panel-state">Loading clients…</p>
@@ -623,7 +623,7 @@
               <div>
                 <p class="eyebrow">Execution evidence</p>
                 <p>
-                  Bounded operational summaries; run inputs, outputs, and raw errors never appear
+                  Bounded operational summaries. Run inputs, outputs, and raw errors never appear
                   here.
                 </p>
               </div>
@@ -698,12 +698,12 @@
                 <div id="economics-policy" class="policy-list">
                   <p><strong>Tier 0</strong><span>Deterministic work · zero model calls</span></p>
                   <p>
-                    <strong>Tier 1–3</strong
+                    <strong>Tier 1-3</strong
                     ><span>Logical local → economy → frontier escalation</span>
                   </p>
                   <p>
                     <strong>Current mode</strong
-                    ><span>Simulation only; provider execution disabled</span>
+                    ><span>Simulation only. Provider execution disabled</span>
                   </p>
                   <p>
                     <strong>Context</strong><span>Required-first, deduplicated, hard-budgeted</span>
@@ -718,7 +718,7 @@
               <div>
                 <p class="eyebrow">Validated memory</p>
                 <p>
-                  Explore the global Markdown memory or a bounded structural map of this harness.
+                  Explore the global Markdown memory or a bounded structural map of this repository.
                   Private client notes are never served.
                 </p>
               </div>
@@ -865,7 +865,7 @@
                     <p class="eyebrow">Agency lane</p>
                     <h2 id="agency-pipeline-heading">First-client pipeline</h2>
                   </div>
-                  <span class="count-pill" id="agency-pipeline-count">—</span>
+                  <span class="count-pill" id="agency-pipeline-count">Pending</span>
                 </div>
                 <div id="agency-pipeline">
                   <p class="panel-state">Loading bounded prospects and proposed offers…</p>
@@ -877,7 +877,7 @@
                     <p class="eyebrow">Task-market lane</p>
                     <h2 id="task-market-pipeline-heading">A2A + x402 simulation</h2>
                   </div>
-                  <span class="count-pill" id="task-market-state">—</span>
+                  <span class="count-pill" id="task-market-state">Pending</span>
                 </div>
                 <div id="task-market-pipeline">
                   <p class="panel-state">Loading contract and simulation evidence…</p>
@@ -887,7 +887,7 @@
             <section class="growth-improvements" aria-labelledby="toolsmith-growth-heading">
               <div class="view-intro compact-intro">
                 <div>
-                  <p class="eyebrow">Repeatable leverage</p>
+                  <p class="eyebrow">Reusable workflows</p>
                   <h2 id="toolsmith-growth-heading">ToolSmith proposals</h2>
                 </div>
                 <span class="status-badge neutral">Review only</span>
@@ -919,7 +919,7 @@
                     <p class="eyebrow">Markdown graph</p>
                     <h2 id="saved-pages-heading">Published pages</h2>
                   </div>
-                  <span class="count-pill" id="saved-page-count">—</span>
+                  <span class="count-pill" id="saved-page-count">Pending</span>
                 </div>
                 <div id="saved-pages-list"><p class="panel-state">Loading saved pages…</p></div>
               </section>

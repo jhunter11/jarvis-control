@@ -7,8 +7,11 @@
 **Source specifications:**
 
 - `docs/superpowers/specs/2026-07-22-reliability-spine-design.md`
+
 - `docs/superpowers/specs/2026-07-22-governed-self-editing-workbench-design.md`
+
 - `docs/superpowers/specs/2026-07-21-hierarchical-control-site-design.md`
+
 - `docs/superpowers/specs/2026-07-21-dashboard-refactor-design.md`
 
 ## Outcome
@@ -28,18 +31,23 @@ operator action verified by the reliability spine.
 
 **Total tasks:** 32
 
-**Estimated sessions:** 24–36 focused build sessions plus the real 14-day acceptance window
+**Estimated sessions:** 24-36 focused build sessions plus the real 14-day acceptance window
 
 ### Dependency-valid execution graph
 
 - Reliability foundation: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10.
-- Observer branch: 3 → 11; 4 + 11 → 12; 3 → 13; 7 + 12 + 13 → 14;
-  2 + 13 → 15 → 16; 14 + 16 → 17.
-- Release branch: 9 + 17 → 18 → 19 → 20 → 21; 17 + 21 → 22.
-- Improvement branch: 2 + 8 → 23 → 24; 10 + 24 → 25.
-- Governed-change branch: 2 + 10 → 26; 18 + 26 → 27; 10 + 26 → 28;
+
+- Observer branch: 3 → 11. 4 + 11 → 12. 3 → 13. 7 + 12 + 13 → 14.
+  2 + 13 → 15 → 16. 14 + 16 → 17.
+
+- Release branch: 9 + 17 → 18 → 19 → 20 → 21. 17 + 21 → 22.
+
+- Improvement branch: 2 + 8 → 23 → 24. 10 + 24 → 25.
+
+- Governed-change branch: 2 + 10 → 26. 18 + 26 → 27. 10 + 26 → 28.
   27 + 28 → 29.
-- Operator handoff joins: 25 + 29 → 30; 21 + 30 → 31; 22 + 31 → 32.
+
+- Operator handoff joins: 25 + 29 → 30. 21 + 30 → 31. 22 + 31 → 32.
 
 Tasks on different branches may proceed in parallel only after every predecessor shown above is
 complete. In particular, the isolated change executor waits for the canonical release gate, and
@@ -51,7 +59,7 @@ Tasks below are dependency-scoped, not assignment-scoped. For file-ownership lan
 done-when criteria, and the concurrency map, see
 `docs/superpowers/plans/2026-07-22-remaining-work-provisioning.md`.
 
-### Implementation checkpoint — 2026-07-22
+### Implementation checkpoint: 2026-07-22
 
 | Task | Status                        | Fresh evidence and remaining boundary                                                                                                                                                                                                                                                                             |
 | ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,7 +67,7 @@ done-when criteria, and the concurrency map, see
 | 2    | Complete                      | Strict canonical JSON, UTC/framing rules, all 18 identity factories, hard-coded cross-process vectors, mutation cases, and bounded parser failures pass the full repository gate.                                                                                                                                 |
 | 3    | In progress                   | Schema version 19, atomic marker migration, exact manifest validation, bounded query-only WAL reads, identity/source recomputation, fixed lock timeout, stable errors, and forbidden-import tests are green. The private settlement writer and observer-only composition root remain intentionally unimplemented. |
 | 4    | In progress (substrate green) | Artifact claims, source claims, immutable candidates, holds, atomic freeze/replay, identity/digest validation, posture/lease checks, and held-task fencing are green. Acceptance remains dependency-gated on Task 3 and the registered adapter in Task 5.                                                         |
-| 5–32 | Not started                   | No production activation, schedule, proactive Telegram, release attestation, ToolSmith execution, branch application, or self-editing runtime is claimed.                                                                                                                                                         |
+| 5-32 | Not started                   | No production activation, schedule, proactive Telegram, release attestation, ToolSmith execution, branch application, or self-editing runtime is claimed.                                                                                                                                                         |
 
 Checkpoint gate: 120 test files / 1,079 tests, 85.25% branch coverage, formatting, lint,
 typecheck, production build, task-market build, memory-graph validation, and whitespace checks all
@@ -88,8 +96,8 @@ analysis, and explicitly separates deterministic witnessing from governed self-e
 Implement strict canonical JSON, raw JSON duplicate detection, UTC timestamp validation,
 length-prefixed domain hashing, and golden identity fixtures.
 
-**Done when:** malformed/noncanonical inputs fail closed; golden hashes are stable across fresh
-processes; typecheck, lint, and focused tests pass.
+**Done when:** malformed/noncanonical inputs fail closed. Golden hashes are stable across fresh
+processes. Typecheck, lint, and focused tests pass.
 
 ### Task 3: Versioned primary database ports
 
@@ -106,13 +114,13 @@ forbidden imports fail tests.
 ### Task 4: Verification freeze substrate
 
 **Type:** code
-**Depends on:** Tasks 2–3
+**Depends on:** Tasks 2-3
 **Complexity:** complex (Level 3)
 
 Add artifact claims, source snapshots, immutable completion candidates, verification holds, atomic
 freeze/replay, and hold-aware lease fencing.
 
-**Done when:** exact replay is idempotent; conflicting identity, stale CAS, expired lease, posture
+**Done when:** exact replay is idempotent. Conflicting identity, stale CAS, expired lease, posture
 drift, partial failure, mutation, and held-task reclaim all fail without partial state.
 
 ### Task 5: Registered daily-report candidate adapter
@@ -134,7 +142,7 @@ request text can choose a path or scope.
 **Complexity:** complex
 
 Change Supervisor, queue-cycle, direct API, recovery, and read models from runner-resolved success to
-`pending_verification`; return a bounded `202` receipt and label historical success
+`pending_verification`. Return a bounded `202` receipt and label historical success
 `legacy_unverified`.
 
 **Done when:** no ordinary runtime path can write new success and all API/dashboard consumers and
@@ -150,7 +158,7 @@ Replace citation-only verification with the exact daily-report verifier, branded
 attempts, append-only attempt evidence, proof joins, and guarded success/failure transactions.
 
 **Done when:** a worker result, citation, stale run, wrong source, unsafe artifact, or mismatched
-identity cannot mint proof; pass/fail replay returns the same receipt.
+identity cannot mint proof. Pass/fail replay returns the same receipt.
 
 ### Task 8: Verified projection finalizer
 
@@ -161,7 +169,7 @@ identity cannot mint proof; pass/fail replay returns the same receipt.
 Implement frozen projector registries, effect journals, live artifact publication, memory/diagram/
 frequency projections, receipts, retries, and crash recovery.
 
-**Done when:** every effect is compare-or-create and idempotent; unresolved/terminal projection state
+**Done when:** every effect is compare-or-create and idempotent. Unresolved/terminal projection state
 is visible and blocks readiness where specified.
 
 ### Task 9: Restart and legacy cutover matrix
@@ -197,7 +205,7 @@ legacy-unverified, and unavailable states at desktop and 390px with no console e
 Add strict immutable schedule/config/policy files, exact local approval, deny-default activation, and
 append-only active windows.
 
-**Done when:** zero/multiple/mismatched schedules are `NO_GO`; text and agents cannot select or alter
+**Done when:** zero/multiple/mismatched schedules are `NO_GO`. Text and agents cannot select or alter
 tenant, automation, time, verifier, or activation.
 
 ### Task 12: Deterministic occurrence materializer
@@ -206,7 +214,7 @@ tenant, automation, time, verifier, or activation.
 **Depends on:** Tasks 4 and 11
 **Complexity:** complex
 
-Derive bounded UTC slots and exact occurrence/execution/task/run IDs; enforce posture and tenant
+Derive bounded UTC slots and exact occurrence/execution/task/run IDs. Enforce posture and tenant
 evidence before idempotent queue creation.
 
 **Done when:** boundary, replay, missed-window, disabled, evidence-missing, wrong-release, and no
@@ -227,7 +235,7 @@ receives only the bounded reader.
 ### Task 14: Reliability observer process
 
 **Type:** code / operations
-**Depends on:** Tasks 7, 12–13
+**Depends on:** Tasks 7, 12-13
 **Complexity:** complex (Level 3)
 
 Build the separate one-shot observer with a fair 45-second work budget, exact classifications,
@@ -329,7 +337,7 @@ drift fixture yields `NO_GO`.
 Require verified settlement, fresh observer, delivered test push, exact signed release intent, and
 operator-approved schedule before activation.
 
-**Done when:** one exact local decision activates only the attested configuration; any changed
+**Done when:** one exact local decision activates only the attested configuration. Any changed
 digest/version returns deny-default.
 
 ### Task 23: Frequency V2 and legacy quarantine
@@ -341,7 +349,7 @@ digest/version returns deny-default.
 Add exact-field verified frequency observations and a frozen catalog-proven import/quarantine path
 for opaque legacy signatures.
 
-**Done when:** only one verified projection updates V2; no delimiter inference or legacy row feeds
+**Done when:** only one verified projection updates V2. No delimiter inference or legacy row feeds
 ToolSmith directly.
 
 ### Task 24: Durable ToolSmith observations
@@ -363,7 +371,7 @@ filesystem, network, subprocess, approval, or frequency-write capability.
 **Complexity:** moderate
 
 Replace recomputation-on-read with scoped persisted proposal views, evidence summaries, and a human
-action to begin a separate governed change request.
+action to start a separate governed change request.
 
 **Done when:** the dashboard never calls `analyze()` on read and request text cannot choose another
 tenant or promote a proposal.
@@ -407,20 +415,20 @@ server-issued scope, cancellation works, and no hidden reasoning or raw secrets 
 ### Task 29: Change authoring, evaluation, and evidence
 
 **Type:** code
-**Depends on:** Tasks 27–28
+**Depends on:** Tasks 27-28
 **Complexity:** complex (Level 3)
 
 Allow Jarvis to inspect its registered repository scope, draft a plan, edit only the isolated
 workspace, run focused/full gates, dispatch independent review, and freeze a bounded diff/evidence
 package.
 
-**Done when:** failed or incomplete gates cannot become approval-ready; author and reviewer cannot
+**Done when:** failed or incomplete gates cannot become approval-ready. Author and reviewer cannot
 mint their own approval or release evidence.
 
 ### Task 30: Dashboard change-review workflow
 
 **Type:** page / dashboard
-**Depends on:** Tasks 25–29
+**Depends on:** Tasks 25-29
 **Complexity:** complex
 
 Add conversation-to-change-request handoff, progress, bounded diff/test/review inspection, stale
@@ -440,7 +448,7 @@ hand it to the normal protected review/release path. Keep merge, trust mutation,
 separate.
 
 **Done when:** stale base/diff/approval, merge conflict, changed tests, or changed policy requires a
-new proposal; rollback is exact and retained.
+new proposal. Rollback is exact and retained.
 
 ### Task 32: Production acceptance and operator handoff
 
@@ -453,12 +461,12 @@ self-edit golden path and negative matrix, signed start attestation, real 14-day
 attestation, recovery drill, and operator documentation.
 
 **Done when:** every reliability requirement and governed-self-edit invariant has direct retained
-evidence; 14/14 jobs are verified/finalized/notified; no P0/P1 or unresolved hold remains; and the
+evidence. 14/14 jobs are verified/finalized/notified. No P0/P1 or unresolved hold remains. the
 operator can converse, inspect, propose, approve, reject, cancel, recover, and roll back from the
 dashboard without granting Jarvis self-approval or release authority.
 
 ## Immediate build batch
 
-The first batch is Tasks 1–4. It is deliberately dormant: it establishes exact identities and the
+The first batch is Tasks 1-4. It is deliberately dormant: it establishes exact identities and the
 candidate/hold boundary without activating schedules or changing production success semantics until
 the complete pending-and-settlement path exists.

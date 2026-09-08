@@ -1,62 +1,48 @@
-# Advanced Automation Blueprints (Phase 8 Expansion)
+# Automation Proposals for Phase 8
 
-This document contains the conceptual blueprints for advanced automations that the agency should implement after the core MVP is stabilized. These features will drive operational efficiency, revenue optimization, and marketing.
+These are proposals for work after the core MVP stabilizes. They do not describe deployed capabilities.
+Activation, external actions, and policy changes remain subject to the operator gates.
 
-## 1. The Autonomous Accountant (Margin Optimization)
-**Purpose:** Ensure client operations remain profitable by dynamically adjusting model quality based on token burn and retainer limits.
-**Trigger:** Runs on a weekly cron job (`src/agents/accountant.ts`).
-**Logic:**
-- Query `task_history` for total tokens consumed by `client_x` this billing cycle.
-- Compare against `memory/core/pricing_logic.json`.
-- If `spend > 80%` of budget and days remaining in month > 5:
-  - Reconfigure `clients/client_x/agent-config-stub.json` to route non-critical background tasks to a cheaper model (e.g., `claude-3-haiku` instead of `claude-3-5-sonnet`).
-  - Alert the agency owner on Telegram.
+## 1. Budget routing
 
-## 2. Auto-Scoping & Onboarding (Zero-Touch Sales)
-**Purpose:** Automate the entire client intake and scaffolding process.
-**Trigger:** Webhook from a Typeform or a Telegram chatbot interaction.
-**Logic:**
-- Agent interviews the prospect to gather: niche, pain points, desired integrations.
-- Agent generates a `5-d-build` specification.
-- Agent executes `scaffold-client.sh <client_id>`.
-- Agent generates the client's `memory/clients/<id>/client_sops.md` and initial SQLite schema based on the intake.
+A weekly accountant worker (`src/agents/accountant.ts`) would compare client usage in `task_history` with `memory/core/pricing_logic.json`.
+If spend exceeds 80% of the budget with more than five days left, it would propose cheaper routing for non-critical tasks.
+The proposal targets `clients/client_x/agent-config-stub.json` and includes a Telegram alert.
+The original model examples were `claude-3-haiku` and `claude-3-5-sonnet`. Recheck availability and quality before any routing change.
 
-## 3. Automated Case-Study Generation (The Marketing Loop)
-**Purpose:** Turn agency successes into marketing collateral.
-**Trigger:** When a specific milestone is hit in `task_history` (e.g., a workflow completes successfully 1,000 times).
-**Logic:**
-- Query the `task_history` and `audit_logs` to calculate time saved vs. manual execution.
-- Draft a high-converting LinkedIn post and a detailed Case Study Markdown document.
-- Open an automated PR or alert the owner on Telegram for approval.
+## 2. Intake and scaffolding
 
-## 4. Infrastructure Self-Healing (Ops Worker)
-**Purpose:** Ensure high availability of the gateway and background workers without human intervention.
-**Trigger:** `heartbeat.ts` returns a failure state.
-**Logic:**
-- Query recent changes to configuration files (e.g., checking git history).
-- If a recent change caused the failure, automatically run `git revert HEAD` and restart the Docker instances.
-- Send a Telegram alert detailing the outage and the auto-remediation step taken.
+A Typeform webhook or Telegram interaction would collect the prospect's niche, pain points, and requested integrations.
+The worker would draft a `5-d-build` specification and prepare `scaffold-client.sh <client_id>`.
+It would also draft `memory/clients/<id>/client_sops.md` and the initial SQLite schema.
 
-## 5. Automated Model Benchmarking (R&D Worker)
-**Purpose:** Automatically test new open-source models for potential cost savings.
-**Trigger:** RSS feed integration tracking AI news (e.g., Hacker News, Hugging Face).
-**Logic:**
-- When a new model is released, download it to the local Ollama instance.
-- Run the agency's automated testing suite against it.
-- If speed/cost/quality metrics beat the current fallback model, update `openclaw.json` to utilize the new model and open a PR.
+## 3. Case-study drafts
 
-## 6. Client Retention & Upsell Engine
-**Purpose:** Increase LTV (Lifetime Value) by engaging clients who under-utilize their retainer.
-**Trigger:** Runs monthly prior to billing cycle.
-**Logic:**
-- If a client's agent utilization is low, query their niche from `client_sops.md`.
-- Generate 3 new automation ideas tailored to their niche.
-- Draft an email to the client: "Hey [Name], your AI assistant has extra capacity this month. We could easily implement [Idea 1] or [Idea 2]. Let me know!"
+A milestone in `task_history`, such as 1,000 successful runs, would trigger a review of usage and audit evidence.
+The worker would compare measured run time with an observed manual baseline where one exists.
+It would draft a LinkedIn post and Markdown case study, then open a PR or request owner review through Telegram.
 
-## 7. Automated PII Compliance Scrubber
-**Purpose:** Guarantee data privacy by scrubbing Personally Identifiable Information from all logs.
-**Trigger:** Intercepts data *before* it is written to `task_history` or `audit_logs`.
-**Logic:**
-- Uses a fast regex/NLP pass to detect Social Security Numbers, Credit Cards, or unauthorized PII.
-- Replaces with `[REDACTED_PII]`.
-- Ensures the agency remains SOC2/GDPR compliant autonomously.
+## 4. Runtime recovery
+
+A failure in `heartbeat.ts` would trigger a review of recent configuration changes and logs.
+The original proposal used `git revert HEAD` and Docker restarts if the latest change caused the failure.
+Any recovery implementation needs bounded rollback authority, preserved evidence, and tests before unattended use.
+It would send a Telegram alert with the outage and recovery action.
+
+## 5. Model evaluation
+
+An RSS feed from sources such as Hacker News or Hugging Face would identify candidate open-source models.
+The worker would download an approved candidate into Ollama and run the agency evaluation suite.
+It would propose an `openclaw.json` change only if measured speed, cost, and quality beat the current fallback.
+
+## 6. Client capacity review
+
+A monthly review before billing would identify low retainer use.
+The worker would read the client's niche from `client_sops.md`, draft three relevant automation ideas, and prepare an email for review.
+Low usage alone would not authorize contact or a scope change.
+
+## 7. Log redaction
+
+A filter would inspect data before writes to `task_history` or `audit_logs`.
+The proposed regex/NLP pass would replace detected Social Security numbers, credit card numbers, and unauthorized PII with `[REDACTED_PII]`.
+Detection can miss sensitive data. This proposal does not establish privacy guarantees, SOC 2 assurance, or GDPR compliance.

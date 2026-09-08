@@ -3,21 +3,28 @@
 This package runs Jarvis as two user LaunchAgents on macOS:
 
 - `com.aiagency.jarvis.gateway` supervises the gateway through `/usr/bin/caffeinate -s`.
+
 - `com.aiagency.jarvis.watchdog` checks `/livez`, `/readyz`, disk capacity, and bounded log rotation every 60 seconds.
 
 The gateway is fixed to `127.0.0.1`. The installer cannot publish it to a LAN, create a tunnel, enable Screen Sharing, or change firewall and file-sharing settings.
 
 ## Safety model
 
-- Releases are copied outside the repository to `~/Library/Application Support/Jarvis/releases/<release-id>` and made read-only (`0555` directories, `0444` files, executable runtime scripts `0555`).
+- The installer copies releases outside the repository to `~/Library/Application Support/Jarvis/releases/<release-id>` with read-only permissions. Directories use `0555`, files use `0444`, and executable runtime scripts use `0555`.
+
 - Mutable database, client, workspace, and Markdown graph state live under a separate `state/` directory with `0700` permissions.
-- LaunchAgents apply `Umask=0077`. A newly created SQLite database and logs therefore remain owner-only.
+
+- LaunchAgents apply `Umask=0077`. New SQLite databases and logs therefore remain owner-only.
+
 - `KeepAlive.SuccessfulExit=false` restarts crashes but allows an intentional clean stop. `ThrottleInterval=30` bounds a crash loop.
-- The startup guard warns below 20% free disk and exits cleanly below 10%, preventing launchd from consuming the last space in a restart loop. The watchdog continues reporting the hold.
-- Logs use bounded copy-and-truncate rotation at 10 MiB with five retained generations. No client payload is intentionally emitted by the watchdog.
+
+- The startup guard warns below 20% free disk and exits cleanly below 10%. This stops launchd from filling the disk through repeated restarts. The watchdog reports the hold.
+
+- Logs use bounded copy-and-truncate rotation at 10 MiB with five retained generations. The watchdog must not emit client payloads.
+
 - Readiness depends on gateway, database, and disk. Optional Ollama or Docker failures may degrade `/health`, but do not falsely mark the core gateway unready.
 
-`caffeinate -s` requests prevention of system sleep only while the Mac is on AC power. It does not guarantee lid-closed operation. Do not use unsupported power-management overrides; use Apple-supported clamshell conditions and verify the LaunchAgents resume after wake.
+`caffeinate -s` requests prevention of system sleep only while the Mac is on AC power. It does not guarantee lid-closed operation. Do not use unsupported power-management overrides. Use Apple-supported clamshell conditions and verify the LaunchAgents resume after wake.
 
 ## Build and inspect
 
@@ -74,7 +81,14 @@ launchctl bootstrap "$JARVIS_GUI_DOMAIN" \
 ./scripts/runtime/runtime-audit.sh
 ```
 
-The runtime audit returns `GO` only when the plists are secure, the exact release is immutable, state permissions are private, launchd owns the gateway, `caffeinate -s` is present, only `127.0.0.1` is listening, core readiness succeeds, and disk is not critical. A disk warning is reported as `warn`; it should trigger cleanup before new storage-heavy work.
+The runtime audit requires every condition below before returning `GO`:
+
+- Secure plists, an immutable release, and private state permissions.
+- A gateway that launchd owns, with `caffeinate -s` present.
+- A listener on `127.0.0.1` only and successful core readiness.
+- Disk capacity above the critical threshold.
+
+The audit reports a disk warning as `warn`. Clean up storage before starting work that needs substantial disk space.
 
 ## Recoverable stop and rollback
 
@@ -87,7 +101,7 @@ launchctl bootout "$JARVIS_GUI_DOMAIN/com.aiagency.jarvis.watchdog"
 launchctl bootout "$JARVIS_GUI_DOMAIN/com.aiagency.jarvis.gateway"
 ```
 
-Because the release and state remain intact, the same inspected definitions can be bootstrapped again. Preserve state before any later migration or release replacement.
+The release and state remain intact. You can bootstrap the same inspected definitions again. Preserve state before any later migration or release replacement.
 
 ## Remote access gate
 
@@ -95,20 +109,26 @@ Remote access decision: **NO-GO**.
 
 This runtime package leaves all remote-access settings unchanged. The current host must not expose Jarvis through a proxy or tunnel: dashboard reads are intentionally loopback-local and mutation routes are not an internet authentication boundary.
 
-Use the repository's read-only host audit for evidence:
+Use the read-only host audit for evidence:
 
 ```bash
 ./scripts/remote-access-audit.sh
 ```
 
-Remote desktop stays disabled until that audit is `GO`, the owner explicitly authorizes activation, and all of these conditions are independently verified:
+Remote desktop requires an audit result of `GO` and explicit owner approval. Verify each condition before activation:
 
-- firewall and stealth mode enabled;
-- guest SMB shares removed;
-- a dedicated hardwired private peer exists with no default route;
-- legacy VNC and Remote Management remain disabled;
-- access uses a dedicated standard macOS operator account;
-- FileVault is enabled; and
+- firewall and stealth mode enabled.
+
+- guest SMB shares removed.
+
+- a dedicated hardwired private peer exists with no default route.
+
+- legacy VNC and Remote Management remain disabled.
+
+- access uses a dedicated standard macOS operator account.
+
+- FileVault enabled.
+
 - Jarvis continues listening only on `127.0.0.1` inside the Mac session.
 
 There are intentionally no Screen Sharing, VNC, Remote Management, port-forwarding, or firewall-enablement commands in this runbook.

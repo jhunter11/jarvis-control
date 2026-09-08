@@ -2,40 +2,34 @@
 
 **Date:** 2026-07-24 (revised 2026-07-25)
 **Status:** Proof of concept complete and runnable. Ledger, temporal, and experiment
-layers landed. The bench **runner** is unfinished — see Honest limitations.
+layers landed. The bench **runner** is unfinished: see Limitations. Status describes the July 25 checkpoint.
 **Sources:** three deep-research reports on agentic memory architecture
 
 ## Why
 
-Three research reports were assessed against Jarvis's memory system:
+This experiment compares three research reports with the Jarvis memory system:
 
-| Report                             | Subject                                                 | Prior state in Jarvis                                |
-| ---------------------------------- | ------------------------------------------------------- | ---------------------------------------------------- |
-| (3) Agentic memory architectures   | CoALA typed-hybrid memory cell per sleeve               | ~90% built by prior work (`023_typed_hybrid_memory`) |
-| (2) Deterministic memory semantics | Event-sourced ledger, bitemporality, conflict hierarchy | Not built                                            |
-| (4) Experimental program           | 8 arms, workload generator, metric dictionary, gates    | Partial (2-arm retrieval eval only)                  |
+| Report                             | Subject                                                 | Prior state in Jarvis                                                                     |
+| ---------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| (3) Agentic memory architectures   | CoALA typed-hybrid memory cell per sleeve               | Prior qualitative estimate: ~90% built (`023_typed_hybrid_memory`); not measured coverage |
+| (2) Deterministic memory semantics | Event-sourced ledger, bitemporality, conflict hierarchy | Not built                                                                                 |
+| (4) Experimental program           | 8 arms, workload generator, metric dictionary, gates    | Partial (2-arm retrieval eval only)                                                       |
 
-The reports agree on one methodological point above all others: **test instead of
-guessing**. No single memory architecture dominates all workloads, so the deliverable
-is not "the best architecture" but a harness that can measure candidates against each
-other on the workloads Jarvis actually has.
+The harness compares candidate memory architectures on representative Jarvis workloads.
+Its results must support backend selection for those workloads, with separate checks for retrieval, answers, and isolation.
 
 ## The finding that shaped the design
 
-Jarvis's `flat` backend is **already stronger than the literature's flat baseline**.
+The Jarvis `flat` backend already applies temporal filters.
 `ScopedLexicalRetrievalService` filters superseded revisions, closed validity windows,
 and operator-withdrawn fragments in SQL, before ranking.
 
-That is good engineering, but it makes the reports' central hypothesis — _typed and
-temporal memory beats flat tagged memory_ — untestable as written, because the flat arm
-already contains the temporal behaviour under test. Comparing `flat` against
-`typed_hybrid` therefore shows no difference, and it would be easy to misread that as
-"the typed work bought us nothing."
+The proposed flat-versus-temporal comparison must account for those existing filters.
+On the initial demo corpus, `flat` and `typed_hybrid` had equal scores.
+That result alone cannot measure the value of temporal filtering or establish equal behavior.
 
-The fix is an explicit experimental control, `flat_untyped`, which restores the
-literature baseline: tags and lexical ranking, no temporal reasoning. It relaxes
-**temporal correctness only** — scope binding and the sensitivity ceiling are enforced
-exactly as everywhere else, so the control isolates one variable and stays safe to run.
+The `flat_untyped` experimental control uses tags and lexical ranking without temporal filters.
+It relaxes **temporal correctness only**. It must enforce the same scope binding and sensitivity ceiling as every other backend.
 
 ## Backends
 
@@ -54,10 +48,8 @@ Five interchangeable backends behind one `MemorySystem` seam, selected by
 
 `npm run memory:demo`
 
-A hand-authored 11-item corpus (`src/memory/demo/sample-memory.ts`) and 5 probe
-questions. Where the synthetic generator produces volume, this corpus produces
-**legibility**: every item declares the role it plays, so a trace can explain not just
-what was retrieved but why that was right or wrong.
+The demo uses 11 hand-authored items (`src/memory/demo/sample-memory.ts`) and 5 probe questions.
+Each item declares its expected role, so the trace can identify correct retrieval and specific failures.
 
 The corpus deliberately contains a superseded launch date, a policy whose validity
 window closed, an operator-withdrawn fragment, a lexical distractor, an evidence chain
@@ -82,16 +74,14 @@ Each answer produces a reasoning trace:
 
 ### Two-layer scoring
 
-Correctness is scored at two independent layers, because conflating them is the mistake
-the reports warn about most:
+Score correctness at two independent layers:
 
-- **memory layer** — did retrieval surface what was required and hold back the stale,
-  withdrawn, and out-of-scope items? This is the backend's job and what a comparison measures.
-- **answer layer** — did the fixed, model-free resolver reach the right conclusion? It
+- **memory layer**: did retrieval return the required evidence and hold back the stale,
+  withdrawn, and out-of-scope items? This measures backend retrieval.
+
+- **answer layer**: did the fixed, model-free resolver reach the right conclusion? It
   considers only compiled survivors, ranks meaningful exact-query coverage discounted by
-  fragment confidence, and requires fixed 600/1000 coverage and confidence floors. The resolver
-  is held constant across backends, so a difference here is downstream of a memory difference,
-  never a backend's doing.
+  fragment confidence, and requires fixed 600/1000 coverage and confidence floors. Keep the resolver constant across backends to isolate the effect of retrieved and compiled evidence.
 
 ### Measured result
 
@@ -105,33 +95,27 @@ typed_temporal  5/5       5/5       2/2       0       C          pass
 ledger          5/5       5/5       2/2       0       B          pass
 ```
 
-The **behaviour** column groups backends by a digest of what they actually did,
-with the backend's own name excluded from the hash. It exists because equal scores
-are not evidence of equal behaviour, and the original scoreboard could not tell the
-two apart. It reports three distinct groups where five rows previously looked
-interchangeable:
+The **behaviour** column groups backends by a digest of their decisions, excluding backend names.
+Equal scores can conceal different decisions. The digest separates three behavior groups:
 
-- **B** — `ledger` decides identically to `flat`. Expected: it writes through the
-  reducer and reads over the flat substrate. Now assertable rather than assumed.
-- **C** — the typed arms re-rank by store class and genuinely diverge from `flat`.
+- **B**: `ledger` decides identically to `flat`. It writes through the reducer and reads over the flat substrate. The digest verifies that equality on this corpus.
+
+- **C**: the typed arms re-rank by store class and differ from `flat`.
+
 - `typed_temporal` matches `typed_hybrid` **on this corpus only**, because the
-  substrate SQL already filters every temporal case the 11 items contain. The
-  temporal layer is exercised by `tests/memory/system/temporal-retrieval.test.ts`,
-  not by this demo.
+  substrate SQL already filters every temporal case the 11 items contain. The temporal cases in `tests/memory/system/temporal-retrieval.test.ts` exercise that layer separately.
 
-Two real findings fall out immediately:
+The demo records two findings:
 
-1. **Defense in depth is working.** On the launch-date question the control ranks the
+1. **The context compiler filters a stale retrieval.** On the launch-date question the control ranks the
    _stale_ Sept 15 date first (bm25 −2.061, a better lexical match than the current
-   −2.029) — a textbook ghost-memory failure. It suppresses nothing. But the context
+   −2.029). It suppresses nothing. But the context
    compiler still drops the superseded revision, so the final answer stays correct.
-   Memory fails, the answer survives, and the two-layer scoring makes that visible
-   rather than hiding it behind a passing end-to-end score.
+   The separate scores record the retrieval failure despite the correct final answer.
 
-2. **Abstention and evidence selection were the measured weak point, and the demo fix moves
-   the metric.** Before the resolver policy, the safe backends scored 5/5 on memory but 2/5
+2. **The resolver policy improves answers on these five questions.** Before the resolver policy, the safe backends scored 5/5 on memory but 2/5
    on answers: code-freeze and refund-policy over-answered, while release-checklist cited the
-   short brand-palette fragment because compiler utility order was mistaken for answer rank.
+   short brand-palette fragment because the resolver used compiler utility order as answer rank.
    `query_specificity_coverage_confidence_v1` now re-ranks only compiled survivors, requires at
    least two meaningful query terms, and declines weak or low-confidence evidence. Safe backends
    score 5/5 answers and 2/2 expected abstentions with zero leaks. This is still a five-question
@@ -139,57 +123,54 @@ Two real findings fall out immediately:
 
 ## Determinism
 
-Every layer is deterministic and fingerprinted: frozen demo clock, seeded PRNG (no
-`Math.random`), stable tie-breaks (`score desc, id asc`), temp databases per backend so
-no arm benefits from another's writes. Re-running the demo produces byte-identical
-traces, and the tests assert it.
+The demo fixes the clock, seeds the PRNG (no `Math.random`), and uses stable tie-breaks (`score desc, id asc`).
+Each backend uses its own temporary database to prevent shared writes.
+Tests assert byte-identical traces across repeated runs.
 
 ## Invariants preserved
 
 1. No new cross-sleeve movement. Promotion still requires `shared_approved_bundles`.
+
 2. The control relaxes temporal correctness only, never scope or sensitivity.
-3. Working memory stays run-local; candidate stores stay propose-only.
-4. Default backend remains `flat`; every addition is opt-in.
+
+3. Working memory stays run-local. Candidate stores stay propose-only.
+
+4. Default backend remains `flat`. Every addition is opt-in.
 
 ## Defects found by review, and fixed
 
-An adversarial review ran four lenses over the build. Seven findings were confirmed
-by direct inspection; each fix carries a regression test that fails without it.
+Review confirmed seven defects by direct inspection. Each recorded fix has a regression test.
 
-| Defect                                                                                                              | Why it mattered                                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `arms.ts` claimed TypedBasic switched per-store retrieval on; `typed_hybrid.retrieve` was byte-identical to `flat`  | The FlatTag→TypedBasic contrast — the program's first hypothesis — could only ever measure noise. Fixed in the backend.  |
-| `isRetrievable` encoded the abstain-on-conflict rule and was called from nowhere; reads used `isLiveClaim`          | Both sides of an unresolved contradiction were served as current, silently picking a winner the ledger never decided.    |
-| `handleSplit` conflict-checked parts against pre-command state only                                                 | One SPLIT could commit two contradictory active claims with no conflict flag and no contradiction edge.                  |
-| `DeterministicPrng.fromSeed` stored its label without mixing it into the seed                                       | Two "independent" root streams at one seed emitted identical sequences; any cross-component effect would be an artifact. |
-| `deletionQueue` was never restored by `loadState`, and the test copied the value out of the object under comparison | The erasure obligation vanished on restart, and the tautological assertion could not fail.                               |
-| `localeCompare` ordered the seeded cluster bootstrap and the arm ranking                                            | Host-collation-dependent ordering: the same seed could yield different confidence intervals on a different machine.      |
-| The trace fingerprint hashed the backend id                                                                         | Two backends always differed there, so it could not support the cross-backend comparison it appeared to.                 |
+| Defect                                                                                                                  | Why it mattered                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `arms.ts` claimed TypedBasic switched per-store retrieval on. `typed_hybrid.retrieve` returned the same bytes as `flat` | The FlatTag→TypedBasic contrast (the first program hypothesis) could only ever measure noise. Fixed in the backend.      |
+| `isRetrievable` encoded the abstain-on-conflict rule but no caller used it. Reads used `isLiveClaim`                    | Reads returned both sides of an unresolved contradiction as current without a ledger decision.                           |
+| `handleSplit` conflict-checked parts against pre-command state only                                                     | One SPLIT could commit two contradictory active claims with no conflict flag and no contradiction edge.                  |
+| `DeterministicPrng.fromSeed` stored its label without mixing it into the seed                                           | Two "independent" root streams at one seed emitted identical sequences. Any cross-component effect would be an artifact. |
+| `loadState` never restored `deletionQueue`, and the test copied the value out of the object under comparison            | The erasure obligation vanished on restart, and the tautological assertion could not fail.                               |
+| `localeCompare` ordered the seeded cluster bootstrap and the arm ranking                                                | Host-collation-dependent ordering: the same seed could yield different confidence intervals on a different machine.      |
+| The trace fingerprint hashed the backend id                                                                             | Two backends always differed there, so it could not support the cross-backend comparison it appeared to.                 |
 
-One reported defect did **not** survive checking: a payload nested past the
-canonicalizer's depth cap is rejected by the zod payload union first, so the audit
-already happened. The reducer's `try/catch` was kept as defence in depth and is
-documented as such rather than as a fix.
+Inspection did not confirm one reported defect. The zod payload union rejects excessive nesting before the canonicalizer depth check.
+The reducer retains its `try/catch` as an additional check.
 
-## Honest limitations
+## Limitations
 
 - **The bench runner is unfinished.** `src/memory/experiment/bench-runner.ts` has the
-  per-item replay machinery but no top-level orchestrator, no CLI, and no tests; two
-  agents died mid-file on session limits. Its `metrics` field is now typed
-  `MetricBundle | null` and set to `null` — previously a `{} as MetricBundle` cast
-  asserted a bundle that was never computed. Nothing consumes it yet, so nothing is
-  currently reporting fabricated numbers, and the honest type is what keeps that true.
+  per-item replay machinery but no top-level orchestrator, no CLI, and no tests. Its `metrics` field uses `MetricBundle | null` and currently contains `null`.
+  The previous `{} as MetricBundle` cast claimed an uncomputed bundle. No consumer uses this field yet.
+
 - **The bench measures no consolidation cost.** The replay harness runs no
-  consolidation pass, so `consolidationProposals` is structurally zero. An arm whose
-  policy declares consolidation would have its maintenance cost understated, and must
-  be skipped rather than scored until that pass exists.
-- **Nothing in the running app consumes the memory seam yet.** `createMemorySystem` is
-  called only from the demo, the bench, and tests — no gateway, chat, or agent path
-  binds it. Backends are swappable in code, via `--backends`, and now via
-  `JARVIS_MEMORY_BACKEND`; but "Jarvis's memory is swappable" is not yet true, only
-  "a swappable memory seam exists and is tested".
+  consolidation pass, so `consolidationProposals` is structurally zero. The harness would understate the maintenance cost of an arm that declares consolidation.
+  Skip those arms until the replay includes that pass.
+
+- **The running app does not consume the memory interface yet.** Only the demo, bench, and tests call `createMemorySystem`.
+  No gateway, chat, or agent path binds it. Backends are swappable in code, via `--backends`, and now via
+  `JARVIS_MEMORY_BACKEND`. Runtime integration remains unfinished.
+
 - The demo resolver is a fixed model-free stand-in, not a language model. It exists to
   hold the answer stage constant. Its 600/1000 thresholds need a larger frozen golden set
   before reuse outside this demo.
-- The 11-item corpus proves behaviour, not statistics. Volume comes from the synthetic
+
+- The 11-item corpus checks specific behaviors. It does not establish statistical performance. Volume comes from the synthetic
   workload generator, once the runner that drives it exists.

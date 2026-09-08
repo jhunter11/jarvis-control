@@ -1,35 +1,34 @@
 # Hierarchical Agent Orchestration
 
-Drawing from LangGraph's Supervisor Hub and CrewAI's hierarchical delegation patterns, the Jarvis framework utilizes a tiered, tree-like agent structure to manage complexity and ensure strict isolation.
+This design uses a tiered agent tree, drawing on LangGraph supervisor and CrewAI hierarchical delegation patterns.
+The hierarchy describes roles. A declared role still needs an authorized executor before it can run work.
 
-## The Agent Tree
+## Agent tree
 
-### 1. The Gateway (Level 1)
-- **Role:** The Express.js API gateway. It receives webhooks from external services or manual triggers from the control UI.
-- **Function:** Determines the Tenant ID and routes the payload to the correct internal system or directly invokes the Jarvis Supervisor.
+| Level | Role              | Responsibility                                                                            |
+| ----- | ----------------- | ----------------------------------------------------------------------------------------- |
+| 1     | Gateway           | Receive external webhooks and UI triggers, resolve the tenant, and route the payload.     |
+| 2     | Jarvis Supervisor | Interpret top-level directives, delegate work, evaluate results, and report to the owner. |
+| 3     | Agency workers    | Run specific internal tasks within their granted scope.                                   |
+| 4     | Client supervisor | Use one client's context and SOPs to delegate client work.                                |
+| 5     | Client workers    | Execute individual tasks within that client's sandbox and return results.                 |
 
-### 2. Jarvis Supervisor (Level 2)
-- **Role:** The `main` OpenClaw orchestrator.
-- **Function:** Analyzes top-level directives (e.g., "Onboard a new client"). Instead of executing the work directly, Jarvis delegates tasks to specialized Level 3 workers. It evaluates their output and reports back to the user.
+The gateway uses Express.js. The proposed supervisor is the `main` OpenClaw orchestrator.
+For example, an onboarding request routes from Jarvis to workers instead of granting the requester direct sandbox access.
 
-### 3. Agency Workers (Level 3)
-- **Role:** Internal, specialized OpenClaw sub-agents.
-- **Examples:**
-  - `scaffold_worker`: Strictly handles running `scaffold-client.sh` and configuring sandbox boundaries.
-  - `audit_worker`: Runs nightly scans for security vulnerabilities or broken tests.
-  - `pr_reviewer`: Evaluates feature branch diffs against agency SOPs.
-  - `toolsmith_worker`: Analyzes the `task_frequency_log` during audits to discover new tools on GitHub or autonomously author new OpenClaw skills when manual workflows become repetitive.
+## Worker examples
 
-### 4. Client Supervisors (Level 4)
-- **Role:** A dedicated manager agent for a specific client (e.g., `client_a_supervisor`).
-- **Function:** When the API Gateway triggers a client automation, it invokes this supervisor. The supervisor understands the client's global context (memory, SOPs) and delegates sub-tasks to the client's specific workers.
+- `scaffold_worker`: run `scaffold-client.sh` and configure sandbox boundaries.
 
-### 5. Client Workers (Level 5)
-- **Role:** Task-specific agents strictly bound to the client's sandbox.
-- **Examples:**
-  - `client_a_scraper`: Allowed to use web tools, but denied access to email tools.
-  - `client_a_emailer`: Allowed to use the `himalaya` tool, but denied access to web tools.
-- **Function:** Executes atomic tasks and returns results to the Client Supervisor for aggregation.
+- `audit_worker`: scan for security vulnerabilities and broken tests.
 
-## Routing Logic
-Code executing at `src/agents/supervisor.ts` acts as the router. It parses the objective, decides which worker to invoke, passes the necessary context, and collects the results.
+- `pr_reviewer`: check feature diffs against agency SOPs.
+
+- `toolsmith_worker`: examine `task_frequency_log`, find reusable tools, or propose new OpenClaw skills for repeated work.
+
+- `client_a_scraper`: use web tools without email access.
+
+- `client_a_emailer`: use `himalaya` without web access.
+
+A client supervisor such as `client_a_supervisor` combines worker results within its client scope.
+The router in `src/agents/supervisor.ts` parses the objective, selects a worker, passes the required context, and collects results.

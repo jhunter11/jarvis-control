@@ -3,7 +3,7 @@
 This profile runs the public `edge-validation-v1` seller plus a credential-free, fixed-destination
 TCP relay for `x402.org:443`. It does not run the Jarvis gateway, dashboard, task executor,
 Taskmarket worker, client automation, or a wallet signer. Isolation limits the blast radius of a
-seller compromise; it cannot prove that every provider, hypervisor, kernel, DNS, registry, or
+seller compromise. It cannot prove that every provider, hypervisor, kernel, DNS, registry, or
 supply-chain attack is impossible.
 
 ## Security boundary
@@ -28,14 +28,14 @@ Jarvis control plane          X no route, callback, shared network, or shared cr
 Wallet/payment signer         X never installed on the seller VPS
 ```
 
-The Compose profile publishes the seller port only on host loopback. The seller is attached only to
-an internal Docker network: its compiled facilitator hostname maps to the relay's fixed internal
-address, and it has no default Internet route. The relay accepts raw TCP from that internal network,
+The Compose profile publishes the seller port only on host loopback. The seller joins only an internal Docker network. Its compiled facilitator hostname maps to the fixed internal relay address.
+It has no default Internet route. The relay accepts raw TCP from that internal network,
 rejects private/link-local/reserved DNS results, and can connect only to the compiled
-`x402.org:443` destination. It has no environment variables, secrets, volume, published port, HTTP
-parser, wallet, or Jarvis credential. A separately managed host
+`x402.org:443` destination. It has no environment variables, secrets, volume, published port, HTTP parser, wallet, or Jarvis credential.
+
+A separately managed host
 TLS proxy terminates HTTPS, applies request/body/rate limits, and forwards only the documented HTTP
-and Streamable HTTP MCP paths to `127.0.0.1:4021`. The proxy owns its TLS certificate material; it
+and Streamable HTTP MCP paths to `127.0.0.1:4021`. The proxy owns its TLS certificate material. It
 does not receive a wallet key or Jarvis credential. Use DNS-based certificate validation if port 80
 would otherwise need to remain open.
 
@@ -52,23 +52,24 @@ than relying on a dashboard toggle.
 
 - Inbound: allow public TCP 443 to the TLS proxy. Deny TCP 4021 and all other public ingress. Use the
   provider console for administration.
+
 - Outbound: default deny. The seller itself requires no general DNS or Internet egress. Permit the
-  relay's established traffic, reviewed DNS path, and public TLS only to the Base Sepolia
-  facilitator (`x402.org:443`); permit the host TLS proxy's exact certificate-authority and
+  established relay traffic, reviewed DNS path, and public TLS only to the Base Sepolia
+  facilitator (`x402.org:443`). Permit the exact host TLS proxy certificate-authority and
   monitoring endpoints separately. Pull and patch images during a maintenance window.
+
 - Deny RFC1918 ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), carrier-grade and provider
   internal ranges, IPv4 link-local (`169.254.0.0/16`), IPv6 unique-local (`fc00::/7`), and IPv6
-  link-local (`fe80::/10`) from the container forwarding path. An exact DNS-resolver exception may
-  be made only when required; it must not create a general link-local exception.
-- Explicitly deny the common cloud metadata address `169.254.169.254` (and the provider's documented
-  IPv6 metadata address) before every allow rule. Disable metadata service access at the provider
+  link-local (`fe80::/10`) from the container forwarding path. Add an exact DNS-resolver exception only when required. It must not create a general link-local exception.
+
+- Explicitly deny the common cloud metadata address `169.254.169.254` (and the documented provider IPv6 metadata address) before every allow rule. Disable metadata service access at the provider
   layer too. Never place a metadata credential on this instance.
+
 - Do not add a route to a Jarvis, client, office, home, CI, registry-control, or wallet network. The
   seller needs no private destination.
 
 Domain IPs can change. Resolve approved destinations through a reviewed firewall or egress-proxy
-update process, retain the previous ruleset for rollback, and fail closed if the allowlist cannot be
-updated. Do not weaken the private/link-local denials to restore connectivity.
+update process, retain the previous ruleset for rollback, and fail closed if the update fails. Do not weaken the private/link-local denials to restore connectivity.
 
 ## Prepare and validate
 
@@ -79,8 +80,9 @@ seller VPS and do not give the VPS registry write authority.
 Copy `task-market.testnet.env.example` to a deployment-only file, replace the image digest, public
 Base Sepolia receive address, price, and public TLS origin, then keep the kill switch false. Before
 the first start, create the external named volume and set its ownership. A fresh Docker volume is
-root-owned; the explicit preparation prevents the non-root service from failing to open SQLite.
-The one-time setup container has no network, a read-only image filesystem, and only `CAP_CHOWN`; it
+root-owned. The explicit preparation prevents the non-root service from failing to open SQLite.
+
+The one-time setup container has no network, a read-only image filesystem, and only `CAP_CHOWN`. It
 is not part of the running Compose application.
 
 ```sh
@@ -115,16 +117,15 @@ docker compose \
 ```
 
 The seller and relay run as numeric UID/GID `1000:1000`, drop all Linux capabilities, forbid privilege
-escalation, use read-only root filesystems, and bound PIDs/CPU/memory/tmpfs/logs. No Docker socket
-or host mount is present. There is no host network, host PID/IPC namespace, or privileged mode. Only
+escalation, use read-only root filesystems, and bound PIDs/CPU/memory/tmpfs/logs. No Docker socket or host mount is present. There is no host network, host PID/IPC namespace, or privileged mode.
+
+Only
 the seller has a persistent writable mount: the named volume at `/var/lib/jarvis-task-market`, which
-contains untrusted facilitator-reported settlement evidence. Verify that UID/GID 1000 is the image's
-unprivileged `node` user before promotion.
+contains untrusted facilitator-reported settlement evidence. Before promotion, verify that UID/GID 1000 maps to the unprivileged `node` user in the image.
 
 `/livez` is the container liveness probe. `/readyz` is a separate readiness signal and correctly
-returns 503 while `TASK_MARKET_ACCEPTING_WORK=false`; this is the default kill switch, not a crash.
-Keep it false until TLS, firewall, request limits, logs, backups, and a complete Base Sepolia payment
-have been verified. This profile contains no mainnet variables or activation record.
+returns 503 while `TASK_MARKET_ACCEPTING_WORK=false`. This is the default kill switch, not a crash.
+Keep it false until you verify TLS, firewall rules, request limits, logs, backups, and a complete Base Sepolia payment. This profile contains no mainnet variables or activation record.
 
 ## Artifact quarantine
 
@@ -138,7 +139,7 @@ the VPS. Quarantine review is validation, not trust transfer.
 ## Read-only compromise drill
 
 Run this compromise drill after first deployment and after firewall, image, or provider changes.
-The commands below inspect or make bounded network probes; they do not stop, delete, rewrite, or
+The commands below inspect or make bounded network probes. They do not stop, delete, rewrite, or
 reconfigure the deployment.
 
 ```sh
@@ -174,17 +175,22 @@ docker exec jarvis-task-market-seller-seller-1 node -e \
 
 Record evidence that:
 
-- public listeners are limited to the TLS proxy and port 4021 is loopback-only;
+- public listeners are limited to the TLS proxy and port 4021 is loopback-only.
+
 - there is no provider peering, private route, public SSH listener, Docker socket, host mount, or
-  reusable Jarvis/GitHub/wallet credential;
+  reusable Jarvis/GitHub/wallet credential.
+
 - the container is non-root with a read-only root, zero capabilities, bounded resources, and only
-  the named settlement volume writable;
+  the named settlement volume writable.
+
 - DNS and required facilitator TLS work, while RFC1918, link-local, metadata, and every Jarvis/client
-  destination are denied from the container forwarding path;
-- the pinned running image digest matches the reviewed release; and
-- any exported evidence remains quarantined and has not been imported into Jarvis.
+  destination are denied from the container forwarding path.
+
+- the pinned running image digest matches the reviewed release.
+
+- any exported evidence remains in quarantine, outside Jarvis.
 
 Any unexpected route, listener, mount, credential, writable path, image digest, or successful
 metadata/private-network probe is a deployment no-go. Leave the kill switch false, preserve the
-read-only evidence, and rotate credentials from a clean control plane; do not investigate by
+read-only evidence, and rotate credentials from a clean control plane. Do not investigate by
 granting the compromised VPS broader access.

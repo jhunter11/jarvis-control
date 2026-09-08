@@ -1,17 +1,25 @@
 # Agency Master SOPs
 
-This document contains the global rules and Standard Operating Procedures for the Jarvis Agency framework. 
+## General principles
 
-## General Principles
-1. **Agent Ergonomics (AXI)**: All automation scripts should be built to be token-efficient and emit structured JSON for seamless agent orchestration.
-2. **Pre-flight Validation (`no-mistakes`)**: Client configurations must run through an isolated Docker-based testing sandbox before deployment to ensure 100% confidence.
-3. **Delegation (`firstmate`)**: The primary Jarvis agent acts as an orchestrator, delegating discrete tasks (e.g., client scaffolding, report generation) to specialized sub-agents.
+1. Automation scripts should conserve tokens and return structured JSON.
 
-## Client Interaction Rules
-- Do NOT bypass the API Gateway to interact with a client's specific sandbox. All cross-tenant actions must go through the orchestrated API.
-- Respect the strict memory boundaries defined in SQLite. Jarvis has read-only oversight across clients, but a client agent cannot access Jarvis's memory or another client's memory.
+2. Test client configurations in an isolated Docker sandbox before deployment. Record the checks and their results.
 
-## Development Standards
-- TypeScript and Node.js for backend automation.
-- SQLite via Kysely for persistence and episodic memory.
-- All code undergoes TDD before implementation using the `superpowers` meta-skills.
+3. Jarvis delegates discrete tasks, such as scaffolding and report generation, to specialist agents through `firstmate`.
+
+## Client interaction
+
+- Use the API Gateway for client sandbox access. Route cross-tenant actions through the orchestrated API.
+
+- Enforce the SQLite memory boundaries. Jarvis has read-only oversight where authorized.
+
+- A client agent cannot access Jarvis memory or another client's memory.
+
+## Development standards
+
+- Use TypeScript and Node.js for backend automation.
+
+- Use SQLite through Kysely for persistence and episodic memory.
+
+- Follow TDD with the `superpowers` meta-skills.

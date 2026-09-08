@@ -1,63 +1,50 @@
 # Company Intelligence Assistant Plan
 
-## Problem Statement
+This proposal covers a private assistant for questions about company documents. It does not establish buyer demand or a deployed service.
+The lead-triage comparison below records an earlier offer decision. The later demand pivot paused that offer pending buyer evidence.
 
-Knowledge-heavy teams lose time and confidence when current answers are scattered across documents,
-chat, tickets, code, and internal databases. Generic chatbots cannot reliably respect company
-permissions, cite the current source, or admit when evidence is missing. Jarvis needs a credible
-offer for teams that want faster employee answers without exposing private data or replacing every
-system they already use.
+## Pilot scope
 
-## Proposed Solution
+Start with one client, one department, one uniform access group, and one approved read-only source bundle.
+Return cited answers or an explicit insufficient-evidence response. Perform no workflow actions.
+A paid knowledge audit would define sources, permissions, risks, a gold evaluation set, support limits, and pilot economics.
 
-Offer a private, permission-aware Company Intelligence Assistant. The first software pilot serves
-one client, one department, one uniform access group, and one approved read-only source bundle. It
-returns cited answers or an explicit insufficient-evidence response. It performs no workflow action
-and does not train on changing company facts. A paid knowledge audit precedes implementation and
-defines sources, permissions, risks, a gold evaluation set, support boundaries, and pilot economics.
+Test three assumptions during discovery:
 
-## Assumptions and Bets
+- Repeated internal questions consume enough time to justify the pilot.
+- The buyer can name an accountable owner for each source.
+- A narrow corpus can answer useful questions before multiple integrations become necessary.
 
-We assume repeated internal questions create measurable friction, a buyer can name an accountable
-source owner, and a narrow corpus can prove value before multi-source integration. We are betting
-that trust, citations, and permission fidelity matter more than calling the product a custom model.
+Retrieval holds changing facts. Consider fine-tuning or LoRA only for a measured behavior gap.
+Do not promise a model trained on all company data before resolving deletion, access, and citation requirements.
 
-Identity attachment risk: “a model trained on all company data” is compelling language but may bind
-us to the wrong architecture. Retrieval should hold changing facts; fine-tuning or LoRA remains an
-optional behavior-specialization layer after measured evidence.
+## Provider and engineering requirements
 
-## Thinking Level Declaration
+Cerebras, another managed provider, or a local model could supply inference.
+Each option must pass the same privacy, answer-quality, latency, and cost gates.
+This plan makes no provider commitment.
 
-This is a synthesis, not a provider commitment. Cerebras, another managed model, or a local model
-could serve inference if it passes the same privacy, quality, latency, and cost gates. The existing
-Daily Lead Triage Pilot remains a valid faster path to first revenue.
+Delivery requires discovery, data classification, SOW/DPA scoping, and security review.
+Engineering work includes authenticated identity, source ACL propagation, secrets, ingestion, retrieval, and evaluation.
+Operations must cover model routing, usage accounting, support, and incident response.
 
-## Skill Dependencies
+## Alternatives considered
 
-- Enterprise discovery, data classification, SOW/DPA scoping, and security communication.
-- Authenticated identity, source ACL propagation, secrets, ingestion, retrieval, evaluation, and
-  production operations.
-- Grounded-answer evaluation, model routing, usage accounting, and incident response.
+| Alternative                         | Reason to defer                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------------- |
+| Train one model on all company data | Changing facts complicate deletion, citations, and permissions.                   |
+| Build multi-tenant SaaS first       | Adds identity, isolation, support, and procurement work before pilot evidence.    |
+| Replace lead triage immediately     | Earlier planning favored its existing demo. Later demand review paused the offer. |
 
-## Alternatives Considered
+## Review areas
 
-| Alternative                             | Why rejected for V1                                                |
-| --------------------------------------- | ------------------------------------------------------------------ |
-| Fine-tune one model on all company data | Facts change; deletion, citations, and permissions become harder.  |
-| Build a multi-tenant SaaS first         | Adds avoidable identity, isolation, support, and procurement risk. |
-| Replace the lead-triage offer           | Discards the only currently deliverable paid pilot.                |
+- Deliverables: audit, synthetic demo, pilot, and evaluation report.
+- Judgment: claims that match evidence and security limits.
+- Systems: client identity, deployment, and support.
+- Participants: buyer, source owner, security reviewer, and employees.
 
-## Quadrant Coverage
+## Stages
 
-| Quadrant         | Plan element                                      |
-| ---------------- | ------------------------------------------------- |
-| Individual Outer | Audit, synthetic demo, pilot, evaluation report   |
-| Individual Inner | Claim discipline and security judgment            |
-| Collective Outer | Client systems, identity, deployment, support     |
-| Collective Inner | Buyer, source owner, security, and employee trust |
-
-## Time Horizons
-
-- **V1:** paid audit and single-source, read-only, cited pilot.
-- **V2:** multiple connectors, mixed ACLs, SSO, hybrid retrieval, managed improvement.
-- **Not planned:** unrestricted “all data,” autonomous actions, or custom training without evidence.
+V1 covers the paid audit and a single-source, read-only pilot with citations.
+V2 could add connectors, mixed ACLs, SSO, hybrid retrieval, and measured improvements.
+Unrestricted data access, autonomous actions, and custom training without evidence remain outside the plan.

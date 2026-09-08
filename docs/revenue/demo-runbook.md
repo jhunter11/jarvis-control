@@ -1,14 +1,14 @@
 # Demo and Delivery Runbook
 
-## What the current proof honestly demonstrates
+## Synthetic worker behavior
 
 The checked-in `acme_corp/daily-report` worker reads a bounded exact-schema CSV from its trusted
 client directory, rejects unsafe or malformed input, selects rows whose status is `qualified`,
 stages and atomically commits `output/report.json`, and records run/trace evidence. The synthetic
 fixture has 10 rows and 5 qualified rows.
 
-It does not yet prove a prospect's CRM integration, scheduled delivery, customer messaging, custom
-qualification rules, or financial outcome. Say that before the demo.
+The fixture does not establish CRM integration, scheduled delivery, customer messaging, custom rules, or a financial result.
+State those limits before the demo.
 
 ## Five-minute synthetic proof
 
@@ -36,10 +36,15 @@ prospect export during an introductory demo.
 ## Demo narrative
 
 1. **Boundary:** “This worker is registered to one exact client and automation.”
+
 2. **Input contract:** “Unexpected headers, statuses, sizes, symlinks, and paths fail closed.”
+
 3. **Deterministic rule:** “`qualified` is an agreed input state, not an AI prediction.”
+
 4. **Artifact:** “The same result is staged, committed, and returned.”
+
 5. **Evidence:** “The run status, diagram, and Markdown note are independently asserted.”
+
 6. **Commercial question:** “Would mapping your current export to this shape remove real manual
    work, or is your existing system already sufficient?”
 
@@ -51,8 +56,10 @@ PMQS, x402, remote access, or internal architecture during the first sales demo.
 ### 1. Qualify before requesting data
 
 - Complete the discovery rubric in `offer-and-qualification.md`.
+
 - Identify the workflow owner, decision authority, one source, normal volume, fields, qualification
   rules, delivery recipient, retention period, and success measure.
+
 - Disqualify if the buyer wants autonomous calls, model-made eligibility decisions, unbounded inbox
   access, or a revenue guarantee in the first pilot.
 
@@ -65,13 +72,16 @@ revenue until agreement and payment evidence exist.
 ### 3. Build with synthetic rows first
 
 - Scaffold an exact client compartment.
-- Create 10–20 synthetic rows covering every accepted and rejected rule branch.
+
+- Create 10-20 synthetic rows covering every accepted and rejected rule branch.
+
 - Write failing tests for the client's schema and acceptance table before adapting the worker.
+
 - Verify no source row, output, error body, or private note reaches global memory or telemetry.
 
 ### 4. Accept one minimal real sample
 
-Use the agreed secure transfer mechanism; never ask for data over an outreach channel. Minimize
+Use the agreed secure transfer mechanism. Never ask for data over an outreach channel. Minimize
 fields, cap rows and bytes, document retention, and keep the sample in the exact client compartment.
 Re-run boundary, malformed-input, recovery, and expected-output tests.
 

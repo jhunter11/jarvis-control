@@ -2,7 +2,7 @@
 
 ## Product model
 
-The human operator—not Jarvis—is the root authority.
+The human operator (not Jarvis) is the root authority.
 
 ```mermaid
 flowchart TD
@@ -27,7 +27,7 @@ Supported scopes are `personal`, `agency`, `company`, `client`, `project`, and `
 
 Memory sleeves are `personal`, `agency`, `company`, `client`, `project`, `agent_scratch`, and `shared_approved`. Each has an owner scope, tenant, sensitivity, retention policy, review/expiry, record count, and version. A sleeve grant binds one agent to explicit `read`, `propose_write`, or `write` permissions, purpose, maximum sensitivity, grantor, expiry, and version.
 
-Effective authority is the intersection of blueprint allowance, operator grant, tenant policy, channel policy, and run budget. No grant is transitive. Cross-scope knowledge becomes a reviewed, materialized `SharedKnowledgeBundle` of sanitized fragments, source references, provenance digest, destination, approver, review, and expiry; it is never a live pointer into another scope's index.
+Effective authority is the intersection of blueprint allowance, operator grant, tenant policy, channel policy, and run budget. No grant is transitive. Cross-scope knowledge becomes a reviewed, materialized `SharedKnowledgeBundle` of sanitized fragments, source references, provenance digest, destination, approver, review, and expiry. It is never a live pointer into another scope's index.
 
 ## Primary contracts
 
@@ -39,11 +39,11 @@ active → retiring → retired
 any non-retired state → quarantined
 ```
 
-A `Conversation` has scope, title, primary agent, explicit participants, operator-private or scope-member visibility, state, and version. Messages store an author, content artifact reference, trust label, artifact references, and time. Individual-agent conversations stay scoped to that agent; Jarvis receives only an explicit handoff artifact or approved summary.
+A `Conversation` has scope, title, primary agent, explicit participants, operator-private or scope-member visibility, state, and version. Messages store an author, content artifact reference, trust label, artifact references, and time. Individual-agent conversations stay scoped to that agent. Jarvis receives only an explicit handoff artifact or approved summary.
 
 A `Delegation` binds parent/child runs, from/to agents, objective, immutable context bundle, tool/sleeve grant IDs, inherited bounded budget, state, and time. It never passes the entire parent transcript.
 
-An `AgentRunProjection` exposes root/parent run, agent and scope, company/client/project, status, elapsed time, tokens, known cost with coverage, and reliability window. A trace is an observable span tree of agent, handoff, delegation, retrieval, model, tool, approval, policy, and artifact events. It may show cited context, policy reason codes, permitted tool metadata, artifacts, timing, and cost—never hidden chain-of-thought. This follows the span model in [OpenTelemetry](https://opentelemetry.io/docs/specs/otel/trace/api/) and operational tracing in the [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/guides/tracing/).
+An `AgentRunProjection` exposes root/parent run, agent and scope, company/client/project, status, elapsed time, tokens, known cost with coverage, and reliability window. A trace is an observable span tree of agent, handoff, delegation, retrieval, model, tool, approval, policy, and artifact events. It may show cited context, policy reason codes, permitted tool metadata, artifacts, timing, and cost, never hidden chain-of-thought. This follows the span model in [OpenTelemetry](https://opentelemetry.io/docs/specs/otel/trace/api/) and operational tracing in the [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/guides/tracing/).
 
 Reliability always includes its window and denominator: eligible, successful, verified, interventions, violations, and derived rates. Unmeasured is distinct from zero.
 
@@ -55,13 +55,20 @@ Every mutation uses an idempotent command envelope containing command ID, expect
 
 Keep `/api/v1/dashboard/*` compatibility projections. Add authenticated `/api/v1/control/*` resources:
 
-- identity, scopes, posture, and kill switch;
-- agents, agent runs/conversations/grants, pause/resume/retire/quarantine;
-- conversations and messages;
-- runs, spans, delegations, events, stop/pause/resume;
-- memory sleeves, effective access, write proposals and decisions;
-- grants and canonical grant plans;
-- approvals and decisions;
+- identity, scopes, posture, and kill switch.
+
+- agents, agent runs/conversations/grants, pause/resume/retire/quarantine.
+
+- conversations and messages.
+
+- runs, spans, delegations, events, stop/pause/resume.
+
+- memory sleeves, effective access, write proposals and decisions.
+
+- grants and canonical grant plans.
+
+- approvals and decisions.
+
 - blueprints, canonical plans, promotion and rollback.
 
 Agent list queries have bounded allowlisted filters for text, use case, lifecycle, company/client/project, current state, and reliability, plus opaque cursor and allowlisted sorting by name, activity, elapsed time, tokens, known cost, and success rate. Unknown filters fail validation.
@@ -86,11 +93,11 @@ Memory Center groups sleeves by trust domain and shows owner, sensitivity, recor
 
 Blueprint Studio guides use case → contracts → orchestration → roles → tools → sleeves → budgets → evals → preview → candidate. Creation yields `draft` or `validating`, never active.
 
-Approval cards answer who, scope, exact effect/destination, disclosed data, maximum cost, reason, fingerprint, and expiry. Actions are Approve once, Reject, and Edit/replan; there is no “always allow” shortcut.
+Approval cards answer who, scope, exact effect/destination, disclosed data, maximum cost, reason, fingerprint, and expiry. Actions are Approve once, Reject, and Edit/replan. There is no “always allow” shortcut.
 
 ## Mobile UX
 
-Bottom navigation is Today, Jarvis, Work, Agents, More. The inspector becomes a bottom sheet; hierarchy becomes breadcrumbs plus collapsible outline and vertical delegation timeline; tables become cards retaining scope/state/time/tokens/cost/reliability; filters use a full-height sheet. Approvals get a separate review screen. Kill switch stays visible, stop and approve are separated, and streaming never moves touch targets.
+Bottom navigation is Today, Jarvis, Work, Agents, More. The inspector becomes a bottom sheet. Hierarchy becomes breadcrumbs plus collapsible outline and vertical delegation timeline. Tables become cards retaining scope/state/time/tokens/cost/reliability. Filters use a full-height sheet. Approvals get a separate review screen. Kill switch stays visible, stop and approve are separated, and streaming never moves touch targets.
 
 ## Page Studio boundary
 
@@ -105,24 +112,41 @@ Use authenticated POST commands plus Server-Sent Events for read-only run update
 ## Red-team invariants
 
 - Guessed IDs reveal no hidden scope, existence, count, or edge.
-- Child grants are explicit intersections; recursive delegation has depth/fanout/child/token/time/cost caps.
+
+- Child grants are explicit intersections. Recursive delegation has depth/fanout/child/token/time/cost caps.
+
 - Personal and client sleeves are authorized before retrieval, not filtered afterward.
+
 - External content cannot request grants or privileged transitions.
+
 - Blueprint/eval changes remain candidate proposals.
+
 - Approvals fail after replay, expiry, actor mismatch, state change, or concurrent decision.
+
 - Stop prevents future steps and separately reports committed effects.
+
 - Queue claim and supervisor both enforce quarantine and kill-switch posture.
-- Missing cost is never zero; reliability always shows sample size.
-- SSE is read-only; POST commands are idempotent.
+
+- Missing cost is never zero. Reliability always shows sample size.
+
+- SSE is read-only. POST commands are idempotent.
+
 - Traces and transcripts do not leak secrets, private prompts, or cross-scope content.
+
 - Page Studio remains a fixed widget-to-read-model catalog.
 
 ## Delivery phases
 
 1. Strict scope, agent, conversation, delegation, trace, grant, sleeve, approval, and blueprint schemas/state tests.
+
 2. Migrations/repositories and projections from the current worker registry, queue, runs, clients, economics, and memory.
+
 3. Authenticated shell, scope rail, agent roster/tree, filters, drilldowns, responsive mobile.
+
 4. Primary/per-agent conversations, minimal context handoffs, span/delegation projections, SSE reconnect/freshness.
+
 5. Memory Center, effective-access service, shared-approved bundles, exact-action approvals, pause/stop/quarantine/kill switch.
+
 6. Blueprint preview, eval candidates, shadow/canary, promotion/retirement/rollback, read-only Page Studio widgets.
+
 7. Remote hardening, IDOR/ABAC/concurrency tests, re-authentication, accessibility, and desktop/mobile browser verification.

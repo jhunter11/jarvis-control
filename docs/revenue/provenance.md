@@ -7,25 +7,24 @@ The candidates below are research leads, not verified buyers. The public signals
 discovery question. The research did not verify legal entity status, ownership, staff count, revenue,
 lead volume, systems, budget, decision authority, service quality, or interest.
 
-No personal names, direct email addresses, phone numbers, homeowner data, or inferred contact details
-are stored in the pack.
+The pack excludes personal names, direct emails, phone numbers, homeowner data, and inferred contacts.
 
-| Business label                        | Public fit evidence                                                                                                                                                                                           | Public contact page                              |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Haven Roofing Services                | Official site describes Charlotte-area residential roofing, free estimates, repair and storm work: https://www.havenroofingservices.com/                                                                      | https://www.havenroofingservices.com/contact     |
-| White Oak Roofing Group               | Official site describes residential roofing, free inspections, storm work, and a published scheduling window: https://www.whiteoakroofs.com/                                                                  | https://www.whiteoakroofs.com/contact            |
-| Triumph Roofing                       | Official site describes Charlotte residential roofing, free quotes, storm work, and same-day response: https://www.triumphroofingcharlotte.com/                                                               | https://www.triumphroofingcharlotte.com/contact/ |
-| RGS Home Pros                         | Official site describes Charlotte/Lake Norman roofing, a public quote intake, storm work, and a one-business-day response: https://www.rgshomepros.com/                                                       | https://www.rgshomepros.com/contact/             |
-| Rock Roofing & Restoration            | Official contact page describes a local Charlotte-area residential roofing company, inspection intake, and a response process: https://rockroofingnc.com/contact/                                             | https://rockroofingnc.com/contact/               |
-| 21 Roofing Group                      | Official site describes Charlotte-area residential roofing, free estimates, repairs, replacement, and storm work: https://21roofinggroup.com/                                                                 | https://21roofinggroup.com/contact-us/           |
-| Southern Star Roofing                 | Official site describes a bounded Carolina footprint, residential roofing, free inspections, storm work, and a published response window: https://southernstarroofing.com/                                    | https://southernstarroofing.com/contact/         |
-| Signature Exteriors                   | Official service page describes residential roofing, inspections, repairs, and storm workflows in a bounded NC/SC footprint: https://signatureexteriorsinc.com/residential-roof-services/residential-roofing/ | https://signatureexteriorsinc.com/contact-us/    |
-| GMI Roofing                           | Official site describes Matthews/Charlotte roof repair and replacement plus a public bid request: https://gmiroofing.com/                                                                                     | https://gmiroofing.com/contact/                  |
-| Roof Repair and Inspection Specialist | Official site describes Charlotte-area repairs, replacement, inspection, storm workflows, and free estimates: https://www.rrischarlotte.com/                                                                  | https://www.rrischarlotte.com/contact            |
+| Business source                                    | Signals recorded July 18                                                                | Contact           |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------- |
+| [Haven Roofing Services][source-1]                 | Charlotte-area residential roofs, free estimates, repairs, storm work                   | [Page][source-2]  |
+| [White Oak Roofing Group][source-3]                | Residential roofs, free inspections, storm work, published scheduling window            | [Page][source-4]  |
+| [Triumph Roofing][source-5]                        | Charlotte residential roofs, free quotes, storm work, same-day response claim           | [Page][source-6]  |
+| [RGS Home Pros][source-7]                          | Charlotte/Lake Norman roofs, quote intake, storm work, one-business-day response claim  | [Page][source-8]  |
+| [Rock Roofing & Restoration][source-9]             | Charlotte-area residential roofs, inspection intake, response process                   | [Page][source-10] |
+| [21 Roofing Group][source-11]                      | Charlotte-area residential roofs, free estimates, repairs, replacement, storm work      | [Page][source-12] |
+| [Southern Star Roofing][source-13]                 | Carolina service area, residential roofs, free inspections, storm work, response window | [Page][source-14] |
+| [Signature Exteriors][source-15]                   | NC/SC service area, residential roofs, inspections, repairs, storm work                 | [Page][source-16] |
+| [GMI Roofing][source-17]                           | Matthews/Charlotte repairs and replacement, public bid request                          | [Page][source-18] |
+| [Roof Repair and Inspection Specialist][source-19] | Charlotte-area repairs, replacement, inspections, storm work, free estimates            | [Page][source-20] |
 
 ## Compliance source
 
-The FTC's official CAN-SPAM business guide states that commercial-email requirements apply to
+The official FTC CAN-SPAM business guide states that commercial-email requirements apply to
 business-to-business email as well as bulk and consumer email. It covers accurate sender/routing
 information, non-deceptive subjects, ad disclosure, a valid postal address, opt-out, honoring
 opt-outs, and responsibility for vendors:
@@ -33,5 +32,26 @@ opt-outs, and responsibility for vendors:
 - https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business
 
 This pack is not legal advice. The operator must check current federal, state, platform, and website
-rules before any external contact. Website availability and page content can change; re-verification
+rules before any external contact. Website availability and page content can change. Re-verification
 on the day of use is mandatory.
+
+[source-1]: https://www.havenroofingservices.com/
+[source-2]: https://www.havenroofingservices.com/contact
+[source-3]: https://www.whiteoakroofs.com/
+[source-4]: https://www.whiteoakroofs.com/contact
+[source-5]: https://www.triumphroofingcharlotte.com/
+[source-6]: https://www.triumphroofingcharlotte.com/contact/
+[source-7]: https://www.rgshomepros.com/
+[source-8]: https://www.rgshomepros.com/contact/
+[source-9]: https://rockroofingnc.com/contact/
+[source-10]: https://rockroofingnc.com/contact/
+[source-11]: https://21roofinggroup.com/
+[source-12]: https://21roofinggroup.com/contact-us/
+[source-13]: https://southernstarroofing.com/
+[source-14]: https://southernstarroofing.com/contact/
+[source-15]: https://signatureexteriorsinc.com/residential-roof-services/residential-roofing/
+[source-16]: https://signatureexteriorsinc.com/contact-us/
+[source-17]: https://gmiroofing.com/
+[source-18]: https://gmiroofing.com/contact/
+[source-19]: https://www.rrischarlotte.com/
+[source-20]: https://www.rrischarlotte.com/contact

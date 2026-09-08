@@ -1,67 +1,59 @@
-# Reference Checkouts — `.reference/`
+# Reference checkouts
 
-Upstream repositories cloned for **design and pattern reference only**. Nothing here is built,
-imported, linted, typechecked, graphed, or deployed. `.reference/` is gitignored; these checkouts
-are re-cloned per machine, never committed.
+The `.reference/` directory holds upstream repositories for design study. Build,
+lint, typecheck, graph, and deployment tasks exclude it. Git also ignores it.
+Clone references separately on each machine.
 
-The rule is one-directional: we read patterns out of `.reference/` and write our own code by hand.
-No file is ever copied across wholesale, and no dependency is added to `package.json` because a
-reference checkout uses it.
+Study their patterns and implement changes in the Jarvis stack. Do not copy whole
+files or add dependencies just because a reference uses them.
 
-## Current checkouts
+## Dashboard reference
 
-| Path                                         | Upstream                                                | License | Kept for                                                                      |
-| -------------------------------------------- | ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------- |
-| `.reference/next-shadcn-dashboard-starter/`  | [Kiranism/next-shadcn-dashboard-starter][starter]        | MIT     | shadcn/ui component composition, dashboard layout & IA, data-table and form patterns, OKLCH theming |
+| Path                                        | Upstream                                          | License | Uses                                                                       |
+| ------------------------------------------- | ------------------------------------------------- | ------- | -------------------------------------------------------------------------- |
+| `.reference/next-shadcn-dashboard-starter/` | [Kiranism/next-shadcn-dashboard-starter][starter] | MIT     | Component structure, navigation, tables, forms, spacing, and OKLCH themes. |
 
 [starter]: https://github.com/Kiranism/next-shadcn-dashboard-starter
 
-### Why this one is reference-only and not adopted
+The reviewed starter uses Next.js 16, React 19, Tailwind v4, Clerk, and Sentry.
+Jarvis uses Express 5, CommonJS, and a `tsc` build. Its dashboard uses vanilla
+JavaScript and CSS with a widget registry. `src/dashboard/routes.ts` serves it with
+`express.static`.
 
-The starter is Next.js 16 / React 19 / Tailwind v4 with **Clerk** auth and **Sentry** error
-tracking. Two hard conflicts with this repo:
+Adopting the starter would require a frontend rewrite and decisions about hosted
+authentication and monitoring. The current use is limited to design reference.
 
-- **Hosted third-party services.** Clerk and Sentry both require external accounts and keys. Jarvis
-  is a fail-closed local-first control plane with its own secrets/auth plane (`npm run auth:status`);
-  adding a hosted identity provider would cut against that.
-- **Stack mismatch.** This repo is `"type": "commonjs"` on Express 5 with a `tsc` build. The
-  dashboard at `public/dashboard/` is ~8k lines of hand-written vanilla JS/CSS with its own widget
-  registry, served by `express.static` from `src/dashboard/routes.ts`. Grafting the starter in would
-  be a rewrite of working code, not an install.
+Useful paths:
 
-What we take instead: layout structure, component anatomy, spacing and theming decisions, and
-table/form interaction patterns — reimplemented in our own stack.
+- `src/components/ui/`: shadcn component composition.
 
-## Useful paths inside the starter
+- `src/features/`: `api/types.ts`, `api/service.ts`, and `api/queries.ts` layers.
 
-- `src/components/ui/` — shadcn primitives as composed by this starter
-- `src/features/` — per-feature `api/types.ts` → `api/service.ts` → `api/queries.ts` layering
-- `docs/themes.md` — OKLCH color system and font configuration
-- `docs/forms.md` — composable field / multi-step form patterns
-- `REFERENCE-AGENTS.md` — the starter's own full stack and convention writeup
+- `docs/themes.md`: color and font configuration.
 
-## Bundled instruction files are neutralized
+- `docs/forms.md`: field and multi-step form patterns.
 
-The starter ships its own `CLAUDE.md` and `AGENTS.md`. Those describe a **different** project and
-contradict our conventions (it mandates single quotes and no trailing comma; our `.prettierrc`
-governs this repo). Left in place they would be auto-discovered as project instructions for any
-agent reading files in that directory, so they are renamed to `REFERENCE-CLAUDE.md` and
-`REFERENCE-AGENTS.md` — still readable, no longer auto-loaded.
+- `REFERENCE-AGENTS.md`: upstream stack and conventions.
 
-**Re-apply this after every update**, because `git pull` restores the original filenames.
+## Instruction files
 
-## Adding or refreshing a checkout
+The upstream `CLAUDE.md` and `AGENTS.md` apply to a different project. Rename them
+to `REFERENCE-CLAUDE.md` and `REFERENCE-AGENTS.md` so agents do not load them as
+Jarvis instructions. This repository uses its own `.prettierrc` and agent guidance.
+Repeat the renaming after each update because Git can restore the original names.
+
+## Clone and refresh
 
 ```bash
 git clone --depth 1 <url> .reference/<name>
 ```
 
-Refresh an existing one, then re-neutralize any instruction files:
+To update the existing dashboard reference:
 
 ```bash
 git -C .reference/next-shadcn-dashboard-starter pull --depth 1
 ```
 
-Ignore coverage is already wired for the whole `.reference/` tree: `.gitignore`, `.prettierignore`,
-`.graphifyignore`, and the Impeccable detector (`.impeccable/config.json` → `ignoreFiles`). ESLint
-and `tsc` only ever see `src`, `tests`, and `clients`, so they need no entry.
+Then rename any restored instruction files. The existing exclusions cover
+`.gitignore`, `.prettierignore`, `.graphifyignore`, and `ignoreFiles` in
+`.impeccable/config.json`. ESLint and `tsc` target `src`, `tests`, and `clients`.

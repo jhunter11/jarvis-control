@@ -1,61 +1,50 @@
-# Reaching the Dashboard From Another Machine
+# Dashboard access from another machine
 
-The control room is **loopback-only by design, and has no authentication of its own.**
-That is not an oversight to be patched around — it is the entire security model, and it is
-enforced at two independent layers:
+The dashboard has no login. It binds to loopback and rejects non-loopback requests at two layers:
 
-| Layer                                                     | Behaviour                                                       |
-| --------------------------------------------------------- | --------------------------------------------------------------- |
-| `isLoopbackHost` in `src/gateway/server.ts`               | The gateway **throws** if asked to bind a non-loopback host      |
-| `requireLoopbackDashboardHost` in `src/dashboard/routes.ts` | Rejects any request whose `Host` header is not exact loopback  |
+| Layer                                                       | Behavior                                                                   |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `isLoopbackHost` in `src/gateway/server.ts`                 | The gateway throws if asked to bind a non-loopback host.                   |
+| `requireLoopbackDashboardHost` in `src/dashboard/routes.ts` | Rejects a request unless its `Host` header matches an exact loopback host. |
 
-Because there is no login, binding this to `0.0.0.0` would put an unauthenticated control
-plane on your network. Anything on that network could approve action proposals, drive model
-runs, and read tenant-safe summaries. Do not do it.
+Do not bind the dashboard to `0.0.0.0`. That would expose action approvals, model execution, and tenant summaries without authentication.
 
-## Use an SSH tunnel instead
+## Remote-access gate
 
-Forward the port over SSH from the machine you want to browse from. Jarvis keeps binding to
-loopback, both guards stay intact, and the traffic is encrypted in transit.
+Remote access remains blocked until the audit and owner-approval requirements in
+[Unattended Runtime](unattended-runtime.md) pass. Follow the same gate in the
+[operator handoff](v1-operator-handoff.md). Do not enable Remote Login, add a tunnel,
+or configure a VPN as a workaround.
 
-Run this **on your desktop**, replacing the host with this Mac's name or LAN address:
+After that gate passes, an approved SSH tunnel can forward the loopback port without
+changing either dashboard guard. A VPN alone does not forward a loopback listener.
+Any approved setup still needs a controlled forwarding path and access restrictions.
+
+The earlier proposal used this command on the browsing machine:
 
 ```bash
 ssh -N -L 3000:localhost:3000 <user>@<this-mac>.local
 ```
 
-Then open <http://localhost:3000/dashboard> on the desktop. From the gateway's perspective the
-request arrives from loopback, so no guard has to be relaxed.
+This is a design example, not authorization to activate remote access. The approved
+configuration must restrict SSH access and use the actual gateway port. The browser
+would then use `http://localhost:3000/dashboard`. Keep the forwarded port consistent
+with the loopback `Host` check.
 
-Notes:
+## Rejected LAN bind
 
-- `-N` opens no shell — it only forwards the port. Add `-f` to background it.
-- Keep the local port at `3000` (or whatever `PORT` the gateway uses). The `Host` header the
-  browser sends is `localhost:<local port>`, and that is what the guard inspects.
-- Remote Login must be enabled on this Mac: System Settings → General → Sharing → Remote Login.
-- If the gateway picked a different port because 3000 was busy, forward that port instead.
-
-For a persistent setup across networks, a private mesh VPN (Tailscale, WireGuard) gives the
-same property: the dashboard still answers on loopback, and only your own devices can reach the
-host at all.
-
-## What was deliberately not built
-
-An env-gated LAN bind with a shared-secret token was considered and rejected on 2026-07-24.
-It would have meant a permanently weaker default and a new auth path to get right, to solve a
-problem that port forwarding already solves with no code and no exposure. Revisit only if the
-dashboard gains real authentication.
+On 2026-07-24, the design rejected an environment-gated LAN bind with a shared token.
+That option would add an authentication path to an otherwise unauthenticated control plane.
+Reconsider a direct LAN bind only after an authentication design and security review.
 
 ## Demo data for local development
 
-The run-supervision and P&L surfaces are empty until real automations execute. To populate them
-for development or a visual check:
+The run-supervision and P&L views stay empty until automations execute. For a local visual check, run:
 
 ```bash
 npm run dev:seed-dashboard
 ```
 
-This writes `demo_`-prefixed rows into the scratch database at
-`.audit-tmp/jarvis-audit.sqlite` only. It exercises all three supervisor derivations and every
-cost basis, including a subscription-only sleeve that must render as *uncovered* rather than as
-$0. Never point it at a real operator database.
+The seeder writes `demo_` rows only to `.audit-tmp/jarvis-audit.sqlite`. It covers all three
+supervisor derivations and every cost basis. The subscription-only example must show
+_uncovered_, because its per-call dollar cost is unknown. Never use a real operator database.

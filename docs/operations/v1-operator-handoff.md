@@ -4,17 +4,24 @@
 
 Jarvis V1 is a private, loopback-only operator control plane. Its strongest working path is:
 
-- a responsive web dashboard at `http://127.0.0.1:3000/dashboard`;
+- a responsive web dashboard at `http://127.0.0.1:3000/dashboard`.
+
 - deterministic Jarvis chat over bounded local read models, with evidence references and no model
-  call;
-- restart-persistent conversations bound to the exact selected agent profile;
+  call.
+
+- restart-persistent conversations bound to the exact selected agent profile.
+
 - a server-owned 34-profile Jarvis → Agency / MCP/x402 hierarchy with declared tools, memory
-  sleeves, knowledge scope, continuation stages, budgets, and escalation targets;
+  sleeves, knowledge scope, continuation stages, budgets, and escalation targets.
+
 - Today, Calendar, Personal Memory, Agency, Work Queue, Runs, Clients, Growth, Knowledge, Runtime,
-  and Page Studio views;
-- isolated Markdown personal memory, a separate global agency graph, and tenant-private client roots;
+  and Page Studio views.
+
+- isolated Markdown personal memory, a separate global agency graph, and tenant-private client roots.
+
 - a deterministic synthetic `acme_corp/daily-report` worker with queue, run, audit, artifact, trace,
-  and startup-recovery evidence; and
+  and startup-recovery evidence.
+
 - an opt-in private Telegram adapter with Keychain token lookup, exact user/chat allowlists,
   long-poll replay protection, redacted inbox evidence, bounded reads, and a `/pause` proposal.
 
@@ -28,21 +35,21 @@ an exact executor is separately wired and verified.
 | Capability                        | Current status                                                                                                                                                | Do not claim                                                                                    |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Web dashboard and Jarvis chat     | Working locally on loopback                                                                                                                                   | Authenticated internet access or a live LLM                                                     |
-| Agent hierarchy and conversations | Working and persistent; non-Jarvis profiles are `profile_only`                                                                                                | That the displayed Agency, developer, red/blue, or idea agents execute work                     |
+| Agent hierarchy and conversations | Working and persistent. Non-Jarvis profiles are `profile_only`                                                                                                | That the displayed Agency, developer, red/blue, or idea agents execute work                     |
 | Personal memory                   | Read-only dashboard over isolated Markdown records, including an owner-only unattended state root                                                             | Conversational remembering, autonomous writes, or Agency/client access                          |
 | Calendar                          | Local-demo events, conflict detection, planning, and approval classification work                                                                             | A connected Google or Outlook account, live sync, or provider writes                            |
-| Telegram                          | Adapter and gateway lifecycle are implemented; disabled until explicitly configured                                                                           | That a bot credential, chat, webhook, or live connection already exists                         |
+| Telegram                          | Adapter and gateway lifecycle are implemented. Disabled until explicitly configured                                                                           | That a bot credential, chat, webhook, or live connection already exists                         |
 | Agency automation                 | One deterministic synthetic client worker plus one durable, audited active/paused execution posture shared by dashboard, queue claims, and run commit fencing | A production customer, unrestricted autonomy, outbound contact, or a general worker marketplace |
 | Page Studio                       | Data-only preview, fingerprint, confirmation, and allowlisted publication work                                                                                | Generated executable UI, arbitrary endpoints, or automatic publication                          |
-| MCP/x402                          | Contract and task-market simulation evidence only; paid CLI activation is hard-blocked pending Task 29                                                        | A wallet, signing, testnet/mainnet payment, external submission, or recognized revenue          |
+| MCP/x402                          | Contract and task-market simulation evidence only. Paid CLI activation is hard-blocked pending Task 29                                                        | A wallet, signing, testnet/mainnet payment, external submission, or recognized revenue          |
 | Backup and recovery               | Run/artifact crash recovery, launchd restart, disk guard, and manual cold-state backup are available                                                          | A completed disaster-restore drill or managed backup service                                    |
 
-Migrations `009`–`017` add governed blueprint records, scopes/sleeves/grants, scoped lexical
+Migrations `009`-`017` add governed blueprint records, scopes/sleeves/grants, scoped lexical
 retrieval, Telegram inbox state, action proposals, provider-neutral calendar connection state,
 delegation traces, access-lifecycle audit evidence, and the agency execution posture. These are deny-first foundations. Their
 presence does not by itself make a profile executable. Gateway startup now installs the declared
 profile/scope/sleeve catalog, but the catalog still reports `authorizationReady: false` because only
-the blueprint layer exists; no effective run constraint has been granted. Delegation has a bounded
+the blueprint layer exists. No effective run constraint has been granted. Delegation has a bounded
 read-only SSE composition and action proposals have an exact decision path. Retrieval consumers,
 blueprint execution, a calendar-provider adapter, delegation producers/frontend streaming, and
 access-lifecycle controls still require explicit composition before they are operator features.
@@ -72,20 +79,26 @@ proxy or tunnel. The local mutation boundary is not an internet authentication s
 
 1. Open **Today**. State immediately that the two calendar rows are local demo data. Show the
    briefing, approval count, source availability, and the distinction between empty and unavailable.
+
 2. Open **Jarvis** and ask: `What needs my attention today?` Then ask: `Show agency agent status.`
    Open the evidence references and explain that this response is deterministic and token-free.
+
 3. Open **Agents**. Traverse Jarvis → Agency → Developer → Code Blue / Code Red, then the separate
    MCP/x402 branch. Open a profile conversation and ask about its purpose, tools, memory, and
    continuation plan. If asked to execute work, show the honest `runtime_not_configured` response.
+
 4. Open **Agency**, **Work Queue**, and **Runs**. Show reversible internal work separately from
    approval-required or blocked work, then show the synthetic daily-report run evidence. Do not call
    `acme_corp` a customer.
+
 5. Open **Calendar** and **Personal Memory**. Show conflict/focus planning with no provider write,
    then explain that personal Markdown is outside the agency/client graph.
+
 6. Open **Page Studio**. Preview a quick recipe, inspect its mappings, checks, gaps, and fingerprint,
    then confirm a data-only page. Explain that unknown capabilities route back to repository work.
+
 7. Close with one bounded-pilot question: “Which repeated internal decision currently requires two
-   exports, is reversible, and has an objective acceptance check?” Sell that workflow—not a generic
+   exports, is reversible, and has an objective acceptance check?” Sell that workflow, not a generic
    autonomous agent.
 
 Do not make Telegram part of the live demo unless the operator has deliberately completed the
@@ -96,13 +109,13 @@ activation and live-private-chat checks below.
 Telegram is disabled by default. Activation supports one exact positive user ID and one exact
 positive private-chat ID. Group/channel IDs, bot senders, unsupported commands, and free-text
 authority requests fail closed. Supported commands are `/today`, `/status`, `/queue`, `/projects`,
-`/pause`, and `/help`; `/pause` creates a five-minute proposal and changes no runtime state until
+`/pause`, and `/help`. `/pause` creates a five-minute proposal and changes no runtime state until
 the loopback desktop operator approves that exact current version and fingerprint. Exact approval
-atomically records the decision and engages the durable pause; rejection does not change posture.
+atomically records the decision and engages the durable pause. Rejection does not change posture.
 
-First create the bot outside this repository and obtain the two exact private-chat identifiers.
+First create the bot outside this repository and get the two exact private-chat identifiers.
 Keep the bot token out of shell arguments, environment variables, plist files, logs, and Git. Store
-it interactively in the macOS login Keychain; `-w` must remain the final option so the command
+it interactively in the macOS login Keychain. `-w` must remain the final option so the command
 prompts instead of placing the token in shell history:
 
 ```bash
@@ -138,7 +151,7 @@ JARVIS_TELEGRAM_CHAT_ID='<positive-private-chat-id>'
 
 The JSON result must say `telegramConfigured: true`, `loaded: false`, and `host: "127.0.0.1"`.
 Review the planned paths, then repeat the same command with `--install`. The installer writes only
-the allowlisted identifiers and Keychain handles to the unloaded LaunchAgent; it never writes the
+the allowlisted identifiers and Keychain handles to the unloaded LaunchAgent. It never writes the
 bot token and never calls `launchctl`.
 
 Explicitly activate and audit the installed runtime:
@@ -155,7 +168,7 @@ launchctl bootstrap "$JARVIS_GUI_DOMAIN" \
 
 Require `status: "GO"`, then send `/help` and `/today` from the exact allowlisted private chat.
 Restart the gateway and confirm that a replayed update is not answered twice. Treat any startup,
-Keychain, polling, allowlist, or audit failure as **not configured**; do not loosen the allowlist or
+Keychain, polling, allowlist, or audit failure as **not configured**. Do not loosen the allowlist or
 move the token into an environment variable to make it work.
 
 ## Calendar provider handoff
@@ -166,19 +179,26 @@ until the operator names the calendar they actually use.
 
 The next implementer should:
 
-1. select exactly one provider from the operator's answer, without adding the other “just in case”;
+1. select exactly one provider from the operator's answer, without adding the other “just in case”.
+
 2. implement `CalendarProviderAdapter.pullIncremental({ cursor, limit })` with a fixed
-   `providerKey` and strict response conversion into the existing bounded delta contract;
-3. use provider-native authorization with PKCE/state and the narrowest read-only calendar scope;
+   `providerKey` and strict response conversion into the existing bounded delta contract.
+
+3. use provider-native authorization with PKCE/state and the narrowest read-only calendar scope.
+
 4. store refresh/access material in macOS Keychain and persist only bounded connection state plus a
-   validated Keychain handle if one is needed—never tokens or raw provider errors;
+   validated Keychain handle if one is needed, never tokens or raw provider errors.
+
 5. register and activate the exact `personal:jarvis` connection, start with a null cursor, persist
-   each delta transactionally, and continue only while `hasMore` is true;
+   each delta transactionally, and continue only while `hasMore` is true.
+
 6. map expired credentials, revocation, provider unavailability, invalid responses, and invalidated
-   cursors to the existing explicit connection states; reset to a scoped full sync only after a
-   reviewed provider-specific recovery rule;
+   cursors to the existing explicit connection states. Reset to a scoped full sync only after a
+   reviewed provider-specific recovery rule.
+
 7. compose `ProviderCalendarReader` into the briefing/dashboard only after sync tests pass, while
-   retaining distinct unavailable/stale/empty UI states; and
+   retaining distinct unavailable/stale/empty UI states.
+
 8. keep all provider writes, invitations, attendee changes, cancellations, and external messages
    disabled. Add private write proposals only through a later exact approval policy.
 
@@ -189,21 +209,29 @@ calendar and say “provider not connected.”
 
 ## Trust boundaries
 
-- Browser access is loopback-only; URL, query text, or tree location grants no authority.
+- Browser access is loopback-only. URL, query text, or tree location grants no authority.
+
 - Command principals, scopes, trust domains, policies, and tenant bindings are server-owned. Message
   text cannot select a tenant, sleeve, tool, wallet, or approval authority.
+
 - Hierarchy is navigation and containment only. Profile declarations and grants do not make an
   executor live, and no authority is inherited through parent/child edges.
+
 - Personal, Agency, MCP/x402, and client data remain separate. Cross-scope sharing must be a reviewed,
-  materialized bundle; it is not a live pointer into another index.
-- Telegram is `read` + `propose`, not `approve` or `execute`; its inbox keeps hashes and redacted
+  materialized bundle. It is not a live pointer into another index.
+
+- Telegram is `read` + `propose`, not `approve` or `execute`. Its inbox keeps hashes and redacted
   classifications rather than raw message text.
+
 - Page Studio publishes allowlisted data manifests, never runtime HTML or JavaScript.
+
 - External contact, contracts, pricing commitments, releases, destructive operations, policy
   changes, payments, and client disclosure remain operator-gated.
+
 - MCP/x402 remains simulation-only with no wallet, signing, withdrawal, or mainnet authority. The
   paid seller environment rejects activation until the separate Task 29 MCP annotations, output
   schema, and Origin review passes.
+
 - The UI exposes observable evidence and structured traces, never hidden reasoning or raw private
   transcripts.
 
@@ -242,7 +270,7 @@ memory roots from a preservation copy.
 V1 does **not** yet contain an automated, destructive restore command or completed disaster-restore
 drill. Treat the backup as preservation evidence, restore only into a separate stopped install root,
 verify the hash manifest and private modes, and audit that isolated runtime before any cutover. If an
-artifact journal or database binding is ambiguous, preserve it and stop; do not delete evidence or
+artifact journal or database binding is ambiguous, preserve it and stop. Do not delete evidence or
 force a success state.
 
 ## Exact verification
@@ -287,4 +315,4 @@ git diff --check
 Live proof requires `/livez` and `/readyz`, a clean browser console, no document overflow at 375,
 768, 1024, and 1440 CSS pixels, usable keyboard focus, readable 200% text zoom, and truthful
 loading/empty/unavailable states. Credentialed Telegram and calendar checks are separate activation
-evidence; unit tests do not prove that an external account is connected.
+evidence. Unit tests do not prove that an external account is connected.

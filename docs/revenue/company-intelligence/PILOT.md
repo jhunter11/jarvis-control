@@ -8,7 +8,7 @@
 
 Do not sell this as “a model with access to all company data.” The safer and more accurate initial
 product is a governed retrieval and answer system. Fine-tuning or LoRA may later specialize tone,
-classification, or task behavior; it is not the source of truth for changing company facts.
+classification, or task behavior. It is not the source of truth for changing company facts.
 
 ## Why now
 
@@ -31,35 +31,50 @@ The pilot must remain provider-neutral.
 
 Deliver:
 
-- one repeated-question/workflow map;
-- source and owner inventory;
-- data classification and permissions map;
-- 30–50 representative questions with expected evidence or abstention;
-- proposed source boundary, refresh target, deployment model, support boundary, and cost model;
+- one repeated-question/workflow map.
+
+- source and owner inventory.
+
+- data classification and permissions map.
+
+- 30-50 representative questions with expected evidence or abstention.
+
+- proposed source boundary, refresh target, deployment model, support boundary, and cost model.
+
 - go/no-go implementation recommendation.
 
 The audit handles metadata and synthetic examples unless a signed data-handling boundary already
-exists. Price is set only after estimating discovery labor and liability; the existing lead-triage
+exists. Price is set only after estimating discovery labor and liability. The existing lead-triage
 price is not a benchmark for this offer.
 
 ### 2. Department pilot
 
 V1 includes:
 
-- one client and one department;
-- named users in one uniform visibility group;
-- one approved Markdown, plain-text, or controlled-export corpus;
-- read-only Q&A with exact source/version citations;
-- an explicit insufficient-evidence response;
-- scheduled or operator-triggered reindexing;
-- client-private feedback and bounded operator metrics;
+- one client and one department.
+
+- named users in one uniform visibility group.
+
+- one approved Markdown, plain-text, or controlled-export corpus.
+
+- read-only Q&A with exact source/version citations.
+
+- an explicit insufficient-evidence response.
+
+- scheduled or operator-triggered reindexing.
+
+- client-private feedback and bounded operator metrics.
+
 - signed retention, deletion, escalation, and offboarding rules.
 
 V1 excludes:
 
-- HR, legal privilege, secrets, financial records, customer PII, and mixed document ACLs;
-- arbitrary Slack, Drive, SharePoint, email, CRM, or database connectors;
-- workflow actions, outbound messages, browsing, or tool execution from retrieved content;
+- HR, legal privilege, secrets, financial records, customer PII, and mixed document ACLs.
+
+- arbitrary Slack, Drive, SharePoint, email, CRM, or database connectors.
+
+- workflow actions, outbound messages, browsing, or tool execution from retrieved content.
+
 - custom model training, 24/7 guarantees, and unrestricted company-wide access.
 
 ### 3. Production rollout
@@ -99,46 +114,71 @@ prohibited, and adversarial questions. Thresholds are agreed before real data.
 
 Hard gates:
 
-- zero observed cross-tenant or out-of-scope disclosure across the full negative test set;
-- every substantive answer is supported by citations to the exact approved version and location;
-- unsupported, prohibited, and hidden-scope questions abstain without confirming hidden data;
-- deleted documents disappear after the agreed refresh window;
-- invalid or interrupted ingestion preserves the last recognized complete index;
+- zero observed cross-tenant or out-of-scope disclosure across the full negative test set.
+
+- every substantive answer is supported by citations to the exact approved version and location.
+
+- unsupported, prohibited, and hidden-scope questions abstain without confirming hidden data.
+
+- deleted documents disappear after the agreed refresh window.
+
+- invalid or interrupted ingestion preserves the last recognized complete index.
+
 - no raw source, question, answer, or excerpt reaches global memory, dashboard, request logs, or
-  model telemetry;
+  model telemetry.
+
 - provider timeout or failure returns a safe unavailable response, never an uncited answer.
 
 Measured acceptance:
 
-- reviewer-scored answer correctness on the signed gold set;
-- citation validity, coverage, and entailment;
-- appropriate-abstention and false-answer rates;
-- retrieval recall on known-answer questions;
-- p50/p95 latency and source freshness against signed targets;
-- successful-query rate, provider failures, and cost per accepted answer;
+- reviewer-scored answer correctness on the signed gold set.
+
+- citation validity, coverage, and entailment.
+
+- appropriate-abstention and false-answer rates.
+
+- retrieval recall on known-answer questions.
+
+- p50/p95 latency and source freshness against signed targets.
+
+- successful-query rate, provider failures, and cost per accepted answer.
+
 - observed change in time-to-answer or escalation count, without an unverified ROI claim.
 
 ## Discovery questions
 
 1. Which employee questions repeat, and who answers them today?
+
 2. Which department owns the pain and the source material?
+
 3. Where does the current evidence live, and who may see each source?
+
 4. Which wrong answers would be merely annoying versus consequential?
+
 5. What should the assistant refuse to answer?
+
 6. How are documents updated, deleted, and declared authoritative?
+
 7. Which identity provider and groups represent employee access?
+
 8. What latency, freshness, support, residency, and retention constraints apply?
+
 9. Who approves security, the pilot budget, and the final gold set?
+
 10. What observable result would justify continuing after the pilot?
 
 ## Pricing inputs
 
 Do not publish a price until these are measured:
 
-- source inventory, cleanup, connector/parser work, identity, deployment, and evaluation labor;
-- documents, bytes, change rate, chunks, embeddings, storage, encryption, backup, and retention;
-- users, query volume, concurrency, context, model route mix, current provider rates, and retries;
-- monitoring, review cadence, incident response, support hours, and source-owner coordination;
+- source inventory, cleanup, connector/parser work, identity, deployment, and evaluation labor.
+
+- documents, bytes, change rate, chunks, embeddings, storage, encryption, backup, and retention.
+
+- users, query volume, concurrency, context, model route mix, current provider rates, and retries.
+
+- monitoring, review cadence, incident response, support hours, and source-owner coordination.
+
 - premiums for restricted data, mixed ACLs, custom connectors, private cloud, residency, or HA.
 
 Commercial shape: fixed audit + one-time implementation + recurring hosting/support + metered
