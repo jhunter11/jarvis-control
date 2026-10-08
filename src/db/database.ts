@@ -57,16 +57,16 @@ async function openDatabase<T>(
   const db = new Kysely<T>({
     dialect: new SqliteDialect({ database: sqlite })
   });
-  let destroyed = false;
+  let destroyPromise: Promise<void> | undefined;
 
   return {
     db,
     sqlite,
-    async destroy() {
-      if (!destroyed) {
-        destroyed = true;
-        await db.destroy();
-      }
+    destroy() {
+      destroyPromise ??= db.destroy().then(() => {
+        if (sqlite.open) sqlite.close();
+      });
+      return destroyPromise;
     }
   };
 }

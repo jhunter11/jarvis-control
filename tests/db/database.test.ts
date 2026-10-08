@@ -152,4 +152,28 @@ describe('database initialization', () => {
 
     await expect(context.destroy()).resolves.toBeUndefined();
   });
+
+  it.each([createDatabase, createClientDatabase])(
+    'closes a raw SQLite handle before Kysely has initialized',
+    async (create) => {
+      const context = await create({ projectRoot, filename: ':memory:' });
+      contexts.push(context);
+
+      expect(context.sqlite.open).toBe(true);
+      await context.destroy();
+
+      expect(context.sqlite.open).toBe(false);
+    }
+  );
+
+  it('closes an initialized Kysely database and shares concurrent shutdown', async () => {
+    const context = await createDatabase({ projectRoot, filename: ':memory:' });
+    contexts.push(context);
+    await context.db.selectFrom('client_registry').selectAll().execute();
+
+    await Promise.all([context.destroy(), context.destroy()]);
+
+    expect(context.sqlite.open).toBe(false);
+    await expect(context.destroy()).resolves.toBeUndefined();
+  });
 });

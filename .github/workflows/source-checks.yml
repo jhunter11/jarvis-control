@@ -1,0 +1,38 @@
+name: Source and Core Checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Dependencies
+        run: npm ci
+      - name: Production Dependency Audit
+        run: npm audit --omit=dev
+      - name: Format
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Types
+        run: npm run typecheck
+      - name: Database and Request Policy Tests
+        run: npx vitest run tests/db/database.test.ts tests/gateway/app.test.ts tests/economics/model-execution-gate.test.ts --coverage.enabled=false
+      - name: Application Build
+        run: npm run build
+      - name: TaskMarket Build
+        run: npm run taskmarket:build
+      - name: Whitespace
+        run: git diff --check
