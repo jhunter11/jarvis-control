@@ -1,6 +1,7 @@
-# Jarvis Control
+# Agent Workflow Control Plane
 
-A TypeScript control plane for AI workflows. It combines a durable task queue, scoped memory, model routing, and typed authorization records.
+A TypeScript and SQLite control plane for agent workflows.
+It stores tasks in a durable queue, routes model requests, budgets context, and checks authorization before model execution.
 This repository is a curated public snapshot of a private working project.
 
 ## Start with the source tour
@@ -64,6 +65,12 @@ The September 8, 2026 repository review ran this gate on Windows with Node 25.5.
 Formatting, linting, and type checks passed. The test step reported 2,029 passed, 194 failed, and 15 skipped tests, plus two unhandled errors.
 Failures included SQLite file access, platform-dependent paths and symlinks, and missing test prerequisites. The full gate remains unresolved in this environment.
 The application build, TaskMarket build, and memory graph command passed when run separately.
+
+The October 8, 2026 review fixed raw SQLite handle shutdown and added LF checkout rules.
+The final local run passed formatting, lint, types, 46 focused tests, and both builds.
+The full dependency audit found no known vulnerabilities.
+The full Windows suite still reported 2,090 passes, 135 failures, and 16 skips, with no unhandled errors.
+The source/core CI workflow covers a smaller test set. The full release gate remains unresolved.
 
 ## Interface
 
